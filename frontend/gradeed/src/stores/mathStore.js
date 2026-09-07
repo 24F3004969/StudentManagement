@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { createId } from '@/utils/id'
+import { topicApi } from '@/services/topicApi'
+import { studentApi } from '@/services/studentApi'
 import {
   normalizeForComparison,
   normalizeText,
@@ -69,6 +71,67 @@ export const useMathStore = defineStore('math', () => {
       studentNotes: {},
     }
   }
+  function mapTopicResponse(topic) {
+    const backendSubtopics = Array.isArray(topic.subtopics)
+      ? topic.subtopics
+      : []
+
+    return {
+      id: topic.id,
+      title: topic.title,
+      displayOrder: topic.displayOrder,
+      difficulty: Number(topic.difficulty) || 1,
+
+      /*
+       * Existing Vue components expect subs to be strings.
+       * subtopicIds keeps the matching PostgreSQL IDs.
+       */
+      subs: backendSubtopics.map(
+        (subtopic) => subtopic.title,
+      ),
+
+      subtopicIds: backendSubtopics.map(
+        (subtopic) => subtopic.id,
+      ),
+    }
+  }
+  async function loadTopics() {
+    const response = await topicApi.findAll()
+
+    topics.value = response.map(mapTopicResponse)
+
+    return topics.value
+  }
+
+  async function loadStudents() {
+    const response = await studentApi.findAll()
+
+    students.value = response.map(mapStudentResponse)
+
+    return students.value
+  }
+
+  async function loadCoreData() {
+    const results = await Promise.all([
+      topicApi.findAll(),
+      studentApi.findAll(),
+    ])
+
+    topics.value = results[0].map(mapTopicResponse)
+    students.value = results[1].map(mapStudentResponse)
+  }
+  function mapStudentResponse(student) {
+    return {
+      id: student.id,
+      name: student.name,
+      edNo: student.edNo || '',
+      overallPointBase:
+        Number(student.overallPointBase) || 0,
+      lastActivityAt: student.lastActivityAt || null,
+      createdAt: student.createdAt || null,
+      updatedAt: student.updatedAt || null,
+    }
+  }
   function findTopicIndex(topicId) {
     return topics.value.findIndex((topic) => topic.id === topicId)
   }
@@ -83,8 +146,7 @@ export const useMathStore = defineStore('math', () => {
       null
     )
   }
-
-  function addTopic(title) {
+  async function addTopic(title) {
     const normalizedTitle = normalizeText(title)
 
     if (!normalizedTitle) {
@@ -97,338 +159,131 @@ export const useMathStore = defineStore('math', () => {
       )
     }
 
-    const duplicate = topics.value.some(
-      (topic) =>
-        normalizeForComparison(topic.title) ===
-        normalizeForComparison(normalizedTitle),
-    )
-
-    if (duplicate) {
-      throw new Error('This topic already exists.')
-    }
-
-    const topic = {
-      id: createId(),
+    const created = await topicApi.create({
       title: normalizedTitle,
       difficulty: Math.min(
         6,
         1 + Math.floor(topics.value.length / 10),
       ),
-      subs: [],
-    }
+    })
 
-    topics.value = [...topics.value, topic]
-    scheduleSave()
+    await loadTopics()
 
-    return topic
+    return mapTopicResponse(created)
   }
 
-  function updateTopic(topicId, title) {
+  async function updateTopic(topicId, title) {
+    const topic = getTopicById(topicId)
+
+    if (!topic) {
+      throw new Error('Topic was not found.')
+    }
+
     const normalizedTitle = normalizeText(title)
 
     if (!normalizedTitle) {
       throw new Error('Topic name is required.')
     }
 
-    if (normalizedTitle.length > 120) {
-      throw new Error(
-        'Topic name cannot exceed 120 characters.',
-      )
-    }
+    await topicApi.update(topicId, {
+      title: normalizedTitle,
+      difficulty: topic.difficulty,
+    })
 
-    const duplicate = topics.value.some(
-      (topic) =>
-        topic.id !== topicId &&
-        normalizeForComparison(topic.title) ===
-        normalizeForComparison(normalizedTitle),
-    )
-
-    if (duplicate) {
-      throw new Error('This topic already exists.')
-    }
-
-    const topicIndex = findTopicIndex(topicId)
-
-    if (topicIndex < 0) {
-      throw new Error('Topic was not found.')
-    }
-
-    topics.value = topics.value.map((topic) =>
-      topic.id === topicId
-        ? {
-          ...topic,
-          title: normalizedTitle,
-        }
-        : topic,
-    )
-
-    scheduleSave()
+    await loadTopics()
   }
 
-  function deleteTopic(topicId) {
-    if (topics.value.length <= 1) {
-      throw new Error('At least one topic is required.')
-    }
-
-    const topicIndex = findTopicIndex(topicId)
-
-    if (topicIndex < 0) {
-      throw new Error('Topic was not found.')
-    }
-
-    const remainingTopics = topics.value.filter(
-      (topic) => topic.id !== topicId,
-    )
-
-    const replacementTopic =
-      remainingTopics[topicIndex] ||
-      remainingTopics[topicIndex - 1] ||
-      null
-
-    const nextProgress = { ...progress.value }
-
-    for (const [studentId, currentTopicId] of Object.entries(
-      nextProgress,
-    )) {
-      if (currentTopicId === topicId) {
-        nextProgress[studentId] =
-          replacementTopic?.id || ALL_TOPICS_COMPLETED
-      }
-    }
-
-    function removeTopicRecord(source) {
-      const output = {}
-
-      for (const [studentId, topicRecords] of Object.entries(
-        source || {},
-      )) {
-        const records = { ...(topicRecords || {}) }
-
-        delete records[topicId]
-
-        if (Object.keys(records).length) {
-          output[studentId] = records
-        }
-      }
-
-      return output
-    }
-
-    topics.value = remainingTopics
-    progress.value = nextProgress
-
-    subProgressBool.value = removeTopicRecord(
-      subProgressBool.value,
-    )
-
-    completedAt.value = removeTopicRecord(completedAt.value)
-    timeSpent.value = removeTopicRecord(timeSpent.value)
-    testScores.value = removeTopicRecord(testScores.value)
-
-    scheduleSave()
+  async function deleteTopic(topicId) {
+    await topicApi.delete(topicId)
+    await loadTopics()
   }
 
-  function moveTopic(topicId, newPosition) {
-    const oldIndex = findTopicIndex(topicId)
-    const targetIndex = Number(newPosition) - 1
+  async function moveTopic(topicId, newPosition) {
+    const position = Number(newPosition)
 
-    if (oldIndex < 0) {
-      throw new Error('Topic was not found.')
+    if (!Number.isInteger(position)) {
+      throw new Error('Invalid topic position.')
     }
 
-    if (
-      !Number.isInteger(targetIndex) ||
-      targetIndex < 0 ||
-      targetIndex >= topics.value.length
-    ) {
-      throw new Error(
-        `Topic position must be between 1 and ${topics.value.length}.`,
-      )
-    }
-
-    if (oldIndex === targetIndex) {
-      return
-    }
-
-    const reorderedTopics = [...topics.value]
-    const [movedTopic] = reorderedTopics.splice(oldIndex, 1)
-
-    reorderedTopics.splice(targetIndex, 0, movedTopic)
-    topics.value = reorderedTopics
-
-    scheduleSave()
+    await topicApi.move(topicId, position)
+    await loadTopics()
   }
 
-  function addSubtopic(topicId, name) {
+  async function addSubtopic(topicId, name) {
     const normalizedName = normalizeText(name)
 
     if (!normalizedName) {
       throw new Error('Subtopic name is required.')
     }
 
-    if (normalizedName.length > 160) {
-      throw new Error(
-        'Subtopic name cannot exceed 160 characters.',
-      )
-    }
+    await topicApi.addSubtopic(topicId, {
+      title: normalizedName,
+    })
 
+    await loadTopics()
+  }
+
+  async function updateSubtopic(
+    topicId,
+    subtopicIndex,
+    name,
+  ) {
     const topic = getTopicById(topicId)
 
     if (!topic) {
       throw new Error('Topic was not found.')
     }
 
-    const duplicate = topic.subs.some(
-      (subtopic) =>
-        normalizeForComparison(subtopic) ===
-        normalizeForComparison(normalizedName),
-    )
+    const subtopicId =
+      topic.subtopicIds?.[subtopicIndex]
 
-    if (duplicate) {
-      throw new Error(
-        'This subtopic already exists in this topic.',
-      )
+    if (!subtopicId) {
+      throw new Error('Subtopic was not found.')
     }
 
-    const newSubtopics = [...topic.subs, normalizedName]
-
-    topics.value = topics.value.map((item) =>
-      item.id === topicId
-        ? {
-          ...item,
-          subs: newSubtopics,
-        }
-        : item,
-    )
-
-    const nextSubProgress = {
-      ...subProgressBool.value,
-    }
-
-    for (const student of students.value) {
-      const studentProgress = {
-        ...(nextSubProgress[student.id] || {}),
-      }
-
-      const existing = Array.isArray(studentProgress[topicId])
-        ? studentProgress[topicId]
-        : []
-
-      studentProgress[topicId] = Array.from(
-        { length: newSubtopics.length },
-        (_, index) => Boolean(existing[index]),
-      )
-
-      nextSubProgress[student.id] = studentProgress
-    }
-
-    subProgressBool.value = nextSubProgress
-    scheduleSave()
-  }
-
-  function updateSubtopic(topicId, subtopicIndex, name) {
     const normalizedName = normalizeText(name)
 
     if (!normalizedName) {
       throw new Error('Subtopic name is required.')
     }
 
-    if (normalizedName.length > 160) {
-      throw new Error(
-        'Subtopic name cannot exceed 160 characters.',
-      )
-    }
+    await topicApi.updateSubtopic(
+      topicId,
+      subtopicId,
+      {
+        title: normalizedName,
+      },
+    )
 
+    await loadTopics()
+  }
+
+  async function deleteSubtopic(
+    topicId,
+    subtopicIndex,
+  ) {
     const topic = getTopicById(topicId)
 
     if (!topic) {
       throw new Error('Topic was not found.')
     }
 
-    if (
-      subtopicIndex < 0 ||
-      subtopicIndex >= topic.subs.length
-    ) {
+    const subtopicId =
+      topic.subtopicIds?.[subtopicIndex]
+
+    if (!subtopicId) {
       throw new Error('Subtopic was not found.')
     }
 
-    const duplicate = topic.subs.some(
-      (subtopic, index) =>
-        index !== subtopicIndex &&
-        normalizeForComparison(subtopic) ===
-        normalizeForComparison(normalizedName),
+    await topicApi.deleteSubtopic(
+      topicId,
+      subtopicId,
     )
 
-    if (duplicate) {
-      throw new Error(
-        'This subtopic already exists in this topic.',
-      )
-    }
-
-    const newSubtopics = [...topic.subs]
-    newSubtopics[subtopicIndex] = normalizedName
-
-    topics.value = topics.value.map((item) =>
-      item.id === topicId
-        ? {
-          ...item,
-          subs: newSubtopics,
-        }
-        : item,
-    )
-
-    scheduleSave()
+    await loadTopics()
   }
 
-  function deleteSubtopic(topicId, subtopicIndex) {
-    const topic = getTopicById(topicId)
-
-    if (!topic) {
-      throw new Error('Topic was not found.')
-    }
-
-    if (
-      subtopicIndex < 0 ||
-      subtopicIndex >= topic.subs.length
-    ) {
-      throw new Error('Subtopic was not found.')
-    }
-
-    const newSubtopics = [...topic.subs]
-    newSubtopics.splice(subtopicIndex, 1)
-
-    topics.value = topics.value.map((item) =>
-      item.id === topicId
-        ? {
-          ...item,
-          subs: newSubtopics,
-        }
-        : item,
-    )
-
-    const nextSubProgress = {
-      ...subProgressBool.value,
-    }
-
-    for (const [studentId, studentRecord] of Object.entries(
-      nextSubProgress,
-    )) {
-      const record = { ...studentRecord }
-
-      if (Array.isArray(record[topicId])) {
-        const checks = [...record[topicId]]
-        checks.splice(subtopicIndex, 1)
-        record[topicId] = checks
-      }
-
-      nextSubProgress[studentId] = record
-    }
-
-    subProgressBool.value = nextSubProgress
-    scheduleSave()
-  }
-
-  function addStudent(name, edNo = '') {
+  async function addStudent(name, edNo = '') {
     const normalizedName = normalizeText(name)
     const normalizedEdNo = normalizeText(edNo)
 
@@ -436,87 +291,21 @@ export const useMathStore = defineStore('math', () => {
       throw new Error('Student name is required.')
     }
 
-    if (normalizedName.length > 60) {
-      throw new Error(
-        'Student name cannot exceed 60 characters.',
-      )
-    }
-
-    if (normalizedEdNo.length > 30) {
-      throw new Error(
-        'ED number cannot exceed 30 characters.',
-      )
-    }
-
-    const duplicateName = students.value.some(
-      (student) =>
-        normalizeForComparison(student.name) ===
-        normalizeForComparison(normalizedName),
-    )
-
-    if (duplicateName) {
-      throw new Error('This student name already exists.')
-    }
-
-    const duplicateEdNo =
-      normalizedEdNo &&
-      students.value.some(
-        (student) =>
-          normalizeForComparison(student.edNo) ===
-          normalizeForComparison(normalizedEdNo),
-      )
-
-    if (duplicateEdNo) {
-      throw new Error(
-        'This ED number belongs to another student.',
-      )
-    }
-
-    const student = {
-      id: createId(),
+    const created = await studentApi.create({
       name: normalizedName,
-      edNo: normalizedEdNo,
-    }
+      edNo: normalizedEdNo || null,
+    })
 
-    const firstTopic = topics.value[0]
-    const now = Date.now()
+    await loadStudents()
 
-    students.value = [student, ...students.value]
-
-    progress.value = {
-      ...progress.value,
-      [student.id]:
-        firstTopic?.id || ALL_TOPICS_COMPLETED,
-    }
-
-    startedAt.value = {
-      ...startedAt.value,
-      [student.id]: now,
-    }
-
-    lastActivity.value = {
-      ...lastActivity.value,
-      [student.id]: now,
-    }
-
-    if (firstTopic) {
-      subProgressBool.value = {
-        ...subProgressBool.value,
-        [student.id]: {
-          [firstTopic.id]: Array.from(
-            { length: firstTopic.subs.length },
-            () => false,
-          ),
-        },
-      }
-    }
-
-    scheduleSave()
-
-    return student
+    return mapStudentResponse(created)
   }
 
-  function updateStudent(studentId, name, edNo = '') {
+  async function updateStudent(
+    studentId,
+    name,
+    edNo = '',
+  ) {
     const normalizedName = normalizeText(name)
     const normalizedEdNo = normalizeText(edNo)
 
@@ -524,79 +313,39 @@ export const useMathStore = defineStore('math', () => {
       throw new Error('Student name is required.')
     }
 
-    const duplicateName = students.value.some(
-      (student) =>
-        student.id !== studentId &&
-        normalizeForComparison(student.name) ===
-        normalizeForComparison(normalizedName),
-    )
+    await studentApi.update(studentId, {
+      name: normalizedName,
+      edNo: normalizedEdNo || null,
+    })
 
-    if (duplicateName) {
-      throw new Error('This student name already exists.')
-    }
-
-    const duplicateEdNo =
-      normalizedEdNo &&
-      students.value.some(
-        (student) =>
-          student.id !== studentId &&
-          normalizeForComparison(student.edNo) ===
-          normalizeForComparison(normalizedEdNo),
-      )
-
-    if (duplicateEdNo) {
-      throw new Error(
-        'This ED number belongs to another student.',
-      )
-    }
-
-    students.value = students.value.map((student) =>
-      student.id === studentId
-        ? {
-          ...student,
-          name: normalizedName,
-          edNo: normalizedEdNo,
-        }
-        : student,
-    )
-
-    scheduleSave()
+    await loadStudents()
   }
 
-  function deleteStudent(studentId) {
-    students.value = students.value.filter(
-      (student) => student.id !== studentId,
-    )
+  async function deleteStudent(studentId) {
+    await studentApi.delete(studentId)
+    await loadStudents()
 
-    const removeStudentRecord = (source) => {
-      const output = { ...source }
-      delete output[studentId]
-      return output
-    }
+    /*
+     * Remove browser-only state until progress is connected
+     * to PostgreSQL in Part 8B.
+     */
+    const stateObjects = [
+      progress,
+      startedAt,
+      timeSpent,
+      lastActivity,
+      completedAt,
+      subProgressBool,
+      testScores,
+      overallPointBase,
+      studentNotes,
+    ]
 
-    progress.value = removeStudentRecord(progress.value)
-    startedAt.value = removeStudentRecord(startedAt.value)
-    timeSpent.value = removeStudentRecord(timeSpent.value)
-    lastActivity.value = removeStudentRecord(
-      lastActivity.value,
-    )
-    completedAt.value = removeStudentRecord(completedAt.value)
-
-    subProgressBool.value = removeStudentRecord(
-      subProgressBool.value,
-    )
-
-    testScores.value = removeStudentRecord(testScores.value)
-
-    overallPointBase.value = removeStudentRecord(
-      overallPointBase.value,
-    )
-
-    studentNotes.value = removeStudentRecord(
-      studentNotes.value,
-    )
-
-    scheduleSave()
+    stateObjects.forEach((stateRef) => {
+      const copy = { ...stateRef.value }
+      delete copy[studentId]
+      stateRef.value = copy
+    })
   }
   function normalizeObject(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -721,30 +470,52 @@ export const useMathStore = defineStore('math', () => {
     loadError.value = null
 
     try {
+      await loadCoreData()
+
+      /*
+       * Progress, tests, and notes are still temporarily
+       * loaded from localStorage until Part 8B and 8C.
+       */
       const stored = loadStoredDataset()
 
       if (stored?.dataset) {
-        applyDataset(stored.dataset)
-      } else {
-        applyDataset(createEmptyDataset())
+        const dataset = stored.dataset
+
+        progress.value = normalizeObject(dataset.progress)
+        startedAt.value = normalizeObject(dataset.startedAt)
+        timeSpent.value = normalizeObject(dataset.timeSpent)
+        lastActivity.value = normalizeObject(
+          dataset.lastActivity,
+        )
+        completedAt.value = normalizeObject(
+          dataset.completedAt,
+        )
+        subProgressBool.value = normalizeObject(
+          dataset.subProgressBool,
+        )
+        testScores.value = normalizeObject(
+          dataset.testScores,
+        )
+        overallPointBase.value = normalizeObject(
+          dataset.overallPointBase,
+        )
+        studentNotes.value = normalizeObject(
+          dataset.studentNotes,
+        )
       }
 
       initialized.value = true
-
-      /*
-       * This saves the initial dataset under the current v100 key.
-       * Full legacy schema migration will be added in Part 5.
-       */
-      saveNow()
     } catch (error) {
-      console.error('MathApp initialization failed', error)
+      console.error(
+        'MathApp initialization failed',
+        error,
+      )
 
       loadError.value =
         error instanceof Error
           ? error.message
-          : 'Could not initialize MathApp.'
+          : 'Could not connect to the backend.'
 
-      applyDataset(createEmptyDataset())
       initialized.value = true
     } finally {
       loading.value = false
@@ -791,7 +562,11 @@ export const useMathStore = defineStore('math', () => {
     addSubtopic,
     updateSubtopic,
     deleteSubtopic,
-
+    mapTopicResponse,
+    mapStudentResponse,
+    loadTopics,
+    loadStudents,
+    loadCoreData,
     addStudent,
     updateStudent,
     deleteStudent,

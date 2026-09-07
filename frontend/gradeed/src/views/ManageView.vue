@@ -107,11 +107,11 @@ function collapseAll() {
   openTopicIds.value = new Set()
 }
 
-function submitTopic() {
+async function submitTopic() {
   clearMessages()
 
   try {
-    mathStore.addTopic(topicName.value)
+    await mathStore.addTopic(topicName.value)
     topicName.value = ''
     showSuccess('Topic added successfully.')
   } catch (error) {
@@ -129,11 +129,11 @@ function cancelTopicEdit() {
   editingTopicName.value = ''
 }
 
-function saveTopicEdit(topicId) {
+async function saveTopicEdit(topicId) {
   clearMessages()
 
   try {
-    mathStore.updateTopic(
+    await mathStore.updateTopic(
       topicId,
       editingTopicName.value,
     )
@@ -145,7 +145,7 @@ function saveTopicEdit(topicId) {
   }
 }
 
-function removeTopic(topic) {
+async function removeTopic(topic) {
   const confirmed = window.confirm(
     `Delete "${topic.title}" and all its subtopics?`,
   )
@@ -157,29 +157,32 @@ function removeTopic(topic) {
   clearMessages()
 
   try {
-    mathStore.deleteTopic(topic.id)
+    await mathStore.deleteTopic(topic.id)
     showSuccess('Topic deleted successfully.')
   } catch (error) {
     showError(error)
   }
 }
 
-function changeTopicPosition(topic, event) {
+async function changeTopicPosition(topic, event) {
   clearMessages()
 
   try {
-    mathStore.moveTopic(topic.id, event.target.value)
+    await mathStore.moveTopic(
+      topic.id,
+      event.target.value,
+    )
+
     showSuccess('Topic position updated.')
   } catch (error) {
     showError(error)
   }
 }
-
-function submitSubtopic(topic) {
+async function submitSubtopic(topic) {
   clearMessages()
 
   try {
-    mathStore.addSubtopic(
+    await mathStore.addSubtopic(
       topic.id,
       newSubtopics.value[topic.id] || '',
     )
@@ -205,7 +208,7 @@ function cancelSubtopicEdit() {
   editingSubtopicName.value = ''
 }
 
-function saveSubtopicEdit() {
+async function saveSubtopicEdit() {
   if (!editingSubtopic.value) {
     return
   }
@@ -213,7 +216,7 @@ function saveSubtopicEdit() {
   clearMessages()
 
   try {
-    mathStore.updateSubtopic(
+    await mathStore.updateSubtopic(
       editingSubtopic.value.topicId,
       editingSubtopic.value.index,
       editingSubtopicName.value,
@@ -226,11 +229,9 @@ function saveSubtopicEdit() {
   }
 }
 
-function removeSubtopic(topic, index) {
-  const subtopic = topic.subs[index]
-
+async function removeSubtopic(topic, index) {
   const confirmed = window.confirm(
-    `Delete subtopic "${subtopic}"?`,
+    `Delete subtopic "${topic.subs[index]}"?`,
   )
 
   if (!confirmed) {
@@ -240,18 +241,22 @@ function removeSubtopic(topic, index) {
   clearMessages()
 
   try {
-    mathStore.deleteSubtopic(topic.id, index)
+    await mathStore.deleteSubtopic(
+      topic.id,
+      index,
+    )
+
     showSuccess('Subtopic deleted successfully.')
   } catch (error) {
     showError(error)
   }
 }
 
-function submitStudent() {
+async function submitStudent() {
   clearMessages()
 
   try {
-    mathStore.addStudent(
+    await mathStore.addStudent(
       studentName.value,
       studentEdNo.value,
     )
@@ -276,12 +281,11 @@ function cancelStudentEdit() {
   editingStudentName.value = ''
   editingStudentEdNo.value = ''
 }
-
-function saveStudentEdit(studentId) {
+async function saveStudentEdit(studentId) {
   clearMessages()
 
   try {
-    mathStore.updateStudent(
+    await mathStore.updateStudent(
       studentId,
       editingStudentName.value,
       editingStudentEdNo.value,
@@ -294,13 +298,9 @@ function saveStudentEdit(studentId) {
   }
 }
 
-function removeStudent(student) {
-  const label = student.edNo
-    ? `${student.name} (${student.edNo})`
-    : student.name
-
+async function removeStudent(student) {
   const confirmed = window.confirm(
-    `Permanently remove ${label}?`,
+    `Permanently remove ${student.name}?`,
   )
 
   if (!confirmed) {
@@ -310,7 +310,7 @@ function removeStudent(student) {
   clearMessages()
 
   try {
-    mathStore.deleteStudent(student.id)
+    await mathStore.deleteStudent(student.id)
     showSuccess('Student removed successfully.')
   } catch (error) {
     showError(error)

@@ -20,5 +20,11 @@ public interface TopicRepository
             String id
     );
 
-    Optional<Topic> findFirstByOrderByDisplayOrderDesc();
+    Optional<Topic>
+    findFirstByOrderByDisplayOrderDesc();
+
+    Optional<Topic>
+    findFirstByDisplayOrderGreaterThanOrderByDisplayOrderAsc(
+            Integer displayOrder
+    );
 }
