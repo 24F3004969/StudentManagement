@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import org.hilal.studentmanagement.dto.student.StudentRequest;
 import org.hilal.studentmanagement.dto.student.StudentResponse;
 import org.hilal.studentmanagement.service.StudentService;
+import org.hilal.studentmanagement.dto.student.OverallPointsRequest;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -96,5 +98,19 @@ public class StudentController {
         studentService.delete(studentId);
 
         return ResponseEntity.noContent().build();
+    }
+    @PatchMapping("/{studentId}/overall-points")
+    public ResponseEntity<StudentResponse>
+    updateOverallPoints(
+            @PathVariable String studentId,
+            @Valid
+            @RequestBody OverallPointsRequest request
+    ) {
+        return ResponseEntity.ok(
+                studentService.updateOverallPointBase(
+                        studentId,
+                        request.basePoints()
+                )
+        );
     }
 }

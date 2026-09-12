@@ -30,6 +30,13 @@ export const studentApi = {
     )
   },
 
+  updateOverallPoints(studentId, basePoints) {
+    return apiClient.patch(
+      `/students/${studentId}/overall-points`,
+      { basePoints },
+    )
+  },
+
   delete(studentId) {
     return apiClient.delete(`/students/${studentId}`)
   },

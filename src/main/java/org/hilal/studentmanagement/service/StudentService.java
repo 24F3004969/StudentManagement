@@ -242,7 +242,23 @@ public class StudentService {
                 student.getUpdatedAt()
         );
     }
+    @Transactional
+    public StudentResponse updateOverallPointBase(
+            String studentId,
+            Long basePoints
+    ) {
+        Student student = getStudent(studentId);
 
+        long points = basePoints == null
+                ? 0L
+                : Math.max(0L, basePoints);
+
+        student.setOverallPointBase(points);
+
+        return toResponse(
+                studentRepository.save(student)
+        );
+    }
     private String cleanRequired(String value) {
         if (value == null) {
             return "";

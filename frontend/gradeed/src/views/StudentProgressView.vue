@@ -8,6 +8,8 @@ import {
   formatDate,
   formatDateTime,
 } from '@/utils/date'
+const actionLoading = ref(false)
+const actionError = ref('')
 
 const mathStore = useMathStore()
 const {
@@ -37,40 +39,70 @@ const searchQuery = ref('')
 const selectedStudentId = ref(null)
 const progressFilter = ref('all')
 const expandedTopicIds = ref(new Set())
-function openStudent(studentId) {
-  selectedStudentId.value = studentId
+async function openStudent(studentId) {
+  actionError.value = ''
+  actionLoading.value = true
 
-  teacherNoteDraft.value =
-    studentNotes.value[studentId] || ''
+  try {
+    await Promise.all([
+      mathStore.loadStudentProgress(studentId),
+      mathStore.loadStudentNote(studentId),
+    ])
 
-  const current = getCurrentTopic(studentId)
+    selectedStudentId.value = studentId
 
-  expandedTopicIds.value = current
-    ? new Set([current.topic.id])
-    : new Set()
+    teacherNoteDraft.value =
+      studentNotes.value[studentId] || ''
+
+    const current = getCurrentTopic(studentId)
+
+    expandedTopicIds.value = current
+      ? new Set([current.topic.id])
+      : new Set()
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not load student information.'
+  } finally {
+    actionLoading.value = false
+  }
 }
-function saveTeacherNote() {
+async function saveTeacherNote() {
   if (!selectedStudentId.value) {
     return
   }
 
-  mathStore.updateStudentNote(
-    selectedStudentId.value,
-    teacherNoteDraft.value,
-  )
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await mathStore.updateStudentNote(
+      selectedStudentId.value,
+      teacherNoteDraft.value,
+    )
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not save the teacher note.'
+  } finally {
+    actionLoading.value = false
+  }
 }
 
-function openParentReport() {
+async function openParentReport() {
   if (!selectedStudentId.value) {
     return
   }
 
-  saveTeacherNote()
+  await saveTeacherNote()
 
-  parentReportStudentId.value =
-    selectedStudentId.value
+  if (!actionError.value) {
+    parentReportStudentId.value =
+      selectedStudentId.value
+  }
 }
-
 function closeParentReport() {
   parentReportStudentId.value = null
 }
@@ -157,19 +189,34 @@ function toggleTopic(topicId) {
   expandedTopicIds.value = next
 }
 
-function handleSubtopicToggle(topicId, subtopicIndex) {
+async function handleSubtopicToggle(
+  topicId,
+  subtopicIndex,
+) {
   if (!selectedStudentId.value) {
     return
   }
 
-  toggleSubtopic(
-    selectedStudentId.value,
-    topicId,
-    subtopicIndex,
-  )
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await toggleSubtopic(
+      selectedStudentId.value,
+      topicId,
+      subtopicIndex,
+    )
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not update subtopic progress.'
+  } finally {
+    actionLoading.value = false
+  }
 }
 
-function handleMarkAll(topic) {
+async function handleMarkAll(topic) {
   if (!selectedStudentId.value) {
     return
   }
@@ -178,15 +225,29 @@ function handleMarkAll(topic) {
     `Mark all remaining subtopics in "${topic.title}" as completed?`,
   )
 
-  if (confirmed) {
-    markAllSubtopicsComplete(
+  if (!confirmed) {
+    return
+  }
+
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await markAllSubtopicsComplete(
       selectedStudentId.value,
       topic.id,
     )
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not complete the subtopics.'
+  } finally {
+    actionLoading.value = false
   }
 }
 
-function handleTopicCompletion(topic) {
+async function handleTopicCompletion(topic) {
   if (!selectedStudentId.value) {
     return
   }
@@ -195,25 +256,46 @@ function handleTopicCompletion(topic) {
     `Mark "${topic.title}" as completed?`,
   )
 
-  if (confirmed) {
-    completeTopicWithoutSubtopics(
+  if (!confirmed) {
+    return
+  }
+
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await completeTopicWithoutSubtopics(
       selectedStudentId.value,
       topic.id,
     )
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not complete the topic.'
+  } finally {
+    actionLoading.value = false
   }
 }
 
-function handleRestart() {
+async function handleRestart() {
   if (!selectedStudent.value) {
     return
   }
 
   const confirmed = window.confirm(
-    `Restart progress for ${selectedStudent.value.name}? Existing completion and time data will be cleared.`,
+    `Restart progress for ${selectedStudent.value.name}? Existing progress, completion dates, and time spent will be reset.`,
   )
 
-  if (confirmed) {
-    restartStudent(selectedStudent.value.id)
+  if (!confirmed) {
+    return
+  }
+
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await restartStudent(selectedStudent.value.id)
 
     const current = getCurrentTopic(
       selectedStudent.value.id,
@@ -222,6 +304,13 @@ function handleRestart() {
     expandedTopicIds.value = current
       ? new Set([current.topic.id])
       : new Set()
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not restart student progress.'
+  } finally {
+    actionLoading.value = false
   }
 }
 
@@ -643,6 +732,19 @@ function statusLabel(status) {
           </article>
         </section>
       </template>
+      <div
+        v-if="actionError"
+        class="message message--error"
+      >
+        {{ actionError }}
+      </div>
+
+      <div
+        v-if="actionLoading"
+        class="progress-action-loading"
+      >
+        Saving progress...
+      </div>
     </main>
     <ParentReportModal
       v-if="parentReportStudentId"

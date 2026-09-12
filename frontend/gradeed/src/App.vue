@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, watch } from 'vue'
+import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useMathStore } from '@/stores/mathStore'
@@ -10,53 +10,10 @@ const {
   initialized,
   loading,
   loadError,
-  topics,
-  students,
-  progress,
-  startedAt,
-  timeSpent,
-  lastActivity,
-  completedAt,
-  subProgressBool,
-  testScores,
-  overallPointBase,
-  studentNotes,
 } = storeToRefs(mathStore)
-
-let stopPersistenceWatcher = null
 
 onMounted(async () => {
   await mathStore.initialize()
-
-  stopPersistenceWatcher = watch(
-    [
-      topics,
-      students,
-      progress,
-      startedAt,
-      timeSpent,
-      lastActivity,
-      completedAt,
-      subProgressBool,
-      testScores,
-      overallPointBase,
-      studentNotes,
-    ],
-    () => {
-      mathStore.scheduleSave()
-    },
-    {
-      deep: true,
-    },
-  )
-})
-
-onBeforeUnmount(() => {
-  if (stopPersistenceWatcher) {
-    stopPersistenceWatcher()
-  }
-
-  mathStore.saveNow()
 })
 </script>
 
@@ -73,8 +30,16 @@ onBeforeUnmount(() => {
       v-else-if="loadError"
       class="app-status app-status--error"
     >
-      <strong>MathApp could not load correctly.</strong>
+      <strong>MathApp could not load.</strong>
       <span>{{ loadError }}</span>
+
+      <button
+        type="button"
+        class="primary-button"
+        @click="mathStore.initialize()"
+      >
+        Try Again
+      </button>
     </div>
 
     <RouterView v-else />

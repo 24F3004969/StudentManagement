@@ -1,8 +1,9 @@
-import { storeToRefs } from 'pinia'
+import {storeToRefs} from 'pinia'
 
-import { useMathStore } from '@/stores/mathStore'
-import { useTopicProgress } from '@/composables/useTopicProgress'
-import { createId } from '@/utils/id'
+import {useMathStore} from '@/stores/mathStore'
+import {useTopicProgress} from '@/composables/useTopicProgress'
+import {createId} from '@/utils/id'
+import {testApi} from '@/services/testApi'
 
 export function useStudentPoints() {
   const mathStore = useMathStore()
@@ -120,7 +121,36 @@ export function useStudentPoints() {
       total: subtopicPoints + completionBonus,
     }
   }
+  async function setOverallPoints(
+    studentId,
+    totalPoints,
+  ) {
+    const enteredTotal = Math.max(
+      0,
+      Math.round(Number(totalPoints) || 0),
+    )
 
+    const testPoints =
+      getStudentTestPoints(studentId)
+
+    const basePoints = Math.max(
+      0,
+      enteredTotal - testPoints,
+    )
+
+    await mathStore.updateOverallPointBase(
+      studentId,
+      basePoints,
+    )
+  }
+  async function clearOverallPointsOverride(
+    studentId,
+  ) {
+    await mathStore.updateOverallPointBase(
+      studentId,
+      0,
+    )
+  }
   function getStudentCorePoints(studentId) {
     return topics.value.reduce(
       (total, topic, topicIndex) => {
@@ -325,23 +355,32 @@ export function useStudentPoints() {
     })
   }
 
-  function saveTests(studentId, topicId, tests) {
-    const newTestScores = {
+  function applyTopicTests(
+    studentId,
+    topicId,
+    backendTests,
+  ) {
+    const mappedTests = Array.isArray(backendTests)
+      ? backendTests.map(
+        mathStore.mapTestResponse,
+      )
+      : []
+
+    const updatedScores = {
       ...testScores.value,
     }
 
     const studentScores = {
-      ...(newTestScores[studentId] || {}),
+      ...(updatedScores[studentId] || {}),
     }
 
-    studentScores[topicId] = tests
-    newTestScores[studentId] = studentScores
+    studentScores[topicId] = mappedTests
+    updatedScores[studentId] = studentScores
 
-    testScores.value = newTestScores
-    mathStore.scheduleSave()
+    testScores.value = updatedScores
   }
 
-  function updateTest(
+  async function updateTest(
     studentId,
     topicId,
     testIndex,
@@ -352,38 +391,124 @@ export function useStudentPoints() {
       testIndex < 0 ||
       testIndex > 2
     ) {
-      return
+      throw new Error('Invalid test number.')
     }
 
     const tests = getTests(studentId, topicId)
-    const existingTest = tests[testIndex]
 
-    const updatedTest = {
-      ...existingTest,
+    const updated = {
+      ...tests[testIndex],
       ...changes,
       testNumber: testIndex + 1,
     }
 
-    updatedTest.points = getTestAwardPoints(
-      updatedTest.score,
-      updatedTest.max,
-    )
+    const scoreText = String(updated.score ?? '').trim()
+    const maximumText = String(updated.max ?? '').trim()
 
-    tests[testIndex] = updatedTest
+    const score = Number(scoreText)
+    const maximumScore = Number(maximumText)
 
-    saveTests(studentId, topicId, tests)
-  }
+    const validScore =
+      scoreText !== '' &&
+      Number.isFinite(score) &&
+      score >= 0
 
-  function clearTest(studentId, topicId, testIndex) {
-    const tests = getTests(studentId, topicId)
+    const validMaximum =
+      maximumText !== '' &&
+      Number.isFinite(maximumScore) &&
+      maximumScore > 0
 
-    tests[testIndex] = createEmptyTest(
+    // Always retain the current input locally.
+    const updatedScores = {
+      ...testScores.value,
+    }
+
+    const studentScores = {
+      ...(updatedScores[studentId] || {}),
+    }
+
+    tests[testIndex] = updated
+    studentScores[topicId] = tests
+    updatedScores[studentId] = studentScores
+    testScores.value = updatedScores
+
+    // Do not call Spring Boot until both marks are valid.
+    if (!validScore || !validMaximum) {
+      return updated
+    }
+
+    if (score > maximumScore) {
+      throw new Error(
+        'Marks obtained cannot exceed total marks.',
+      )
+    }
+
+    const response = await testApi.save(
       studentId,
       topicId,
-      testIndex,
+      testIndex + 1,
+      {
+        testNumber: testIndex + 1,
+        score,
+        maximumScore,
+        testDate: updated.date || null,
+        remark: updated.remark || null,
+      },
     )
 
-    saveTests(studentId, topicId, tests)
+    const topicTests = await testApi.findByTopic(
+      studentId,
+      topicId,
+    )
+
+    applyTopicTests(
+      studentId,
+      topicId,
+      topicTests,
+    )
+
+    return mathStore.mapTestResponse(response)
+  }
+
+  async function clearTest(
+    studentId,
+    topicId,
+    testIndex,
+  ) {
+    if (
+      !Number.isInteger(testIndex) ||
+      testIndex < 0 ||
+      testIndex > 2
+    ) {
+      throw new Error('Invalid test number.')
+    }
+
+    try {
+      await testApi.delete(
+        studentId,
+        topicId,
+        testIndex + 1,
+      )
+    } catch (error) {
+      /*
+       * Clearing an unsaved local draft can return 404.
+       * Ignore only that specific case.
+       */
+      if (error.status !== 404) {
+        throw error
+      }
+    }
+
+    const topicTests = await testApi.findByTopic(
+      studentId,
+      topicId,
+    )
+
+    applyTopicTests(
+      studentId,
+      topicId,
+      topicTests,
+    )
   }
 
   function getTestPercentage(test) {
@@ -512,5 +637,7 @@ export function useStudentPoints() {
     getStudentPointBreakdown,
     getLeaderboard,
     getStudentRank,
+    applyTopicTests,
+    clearOverallPointsOverride,
   }
 }

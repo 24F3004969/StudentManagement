@@ -24,7 +24,8 @@ const selectedStudentId = ref(null)
 const expandedTopicIds = ref(new Set())
 const message = ref('')
 const errorMessage = ref('')
-
+const actionLoading = ref(false)
+const actionError = ref('')
 const filteredStudents = computed(() => {
   const query = searchQuery.value
     .trim()
@@ -91,10 +92,48 @@ function clearMessages() {
   errorMessage.value = ''
 }
 
-function openStudent(studentId) {
+async function openStudent(studentId) {
   clearMessages()
-  selectedStudentId.value = studentId
-  expandedTopicIds.value = new Set()
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await mathStore.loadStudentTests(studentId)
+
+    selectedStudentId.value = studentId
+    expandedTopicIds.value = new Set()
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not load student tests.'
+  } finally {
+    actionLoading.value = false
+  }
+}
+async function saveTestField(
+  topicId,
+  testIndex,
+  changes,
+) {
+  actionError.value = ''
+  actionLoading.value = true
+
+  try {
+    await updateTest(
+      selectedStudentId.value,
+      topicId,
+      testIndex,
+      changes,
+    )
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not save the test result.'
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 function closeStudent() {
@@ -123,93 +162,70 @@ function getTopicNumber(topicId) {
   )
 }
 
-function handleScoreChange(
+async function handleScoreChange(
   topicId,
   testIndex,
   event,
 ) {
-  clearMessages()
-
   const value = event.target.value
 
   if (value !== '' && Number(value) < 0) {
-    errorMessage.value =
+    actionError.value =
       'Marks obtained cannot be negative.'
 
     return
   }
 
-  updateTest(
-    selectedStudentId.value,
-    topicId,
-    testIndex,
-    {
-      score: value,
-    },
-  )
+  await saveTestField(topicId, testIndex, {
+    score: value,
+  })
 }
 
-function handleMaximumChange(
+async function handleMaximumChange(
   topicId,
   testIndex,
   event,
 ) {
-  clearMessages()
-
   const value = event.target.value
 
-  if (value !== '' && Number(value) < 0) {
-    errorMessage.value =
+  actionError.value = ''
+
+  // Allow an empty or zero draft without showing an error.
+  if (
+    value !== '' &&
+    (!Number.isFinite(Number(value)) ||
+      Number(value) < 0)
+  ) {
+    actionError.value =
       'Total marks cannot be negative.'
 
     return
   }
 
-  updateTest(
-    selectedStudentId.value,
-    topicId,
-    testIndex,
-    {
-      max: value,
-    },
-  )
+  await saveTestField(topicId, testIndex, {
+    max: value,
+  })
 }
-
-function handleDateChange(
+async function handleDateChange(
   topicId,
   testIndex,
   event,
 ) {
-  clearMessages()
-
-  updateTest(
-    selectedStudentId.value,
-    topicId,
-    testIndex,
-    {
-      date: event.target.value,
-    },
-  )
+  await saveTestField(topicId, testIndex, {
+    date: event.target.value,
+  })
 }
 
-function handleRemarkChange(
+async function handleRemarkChange(
   topicId,
   testIndex,
   event,
 ) {
-  clearMessages()
-
-  updateTest(
-    selectedStudentId.value,
-    topicId,
-    testIndex,
-    {
-      remark: event.target.value,
-    },
-  )
+  await saveTestField(topicId, testIndex, {
+    remark: event.target.value,
+  })
 }
-
-function removeTest(topicId, testIndex) {
+async function removeTest(topicId, testIndex) {
   const confirmed = window.confirm(
     `Clear Test ${testIndex + 1}?`,
   )
@@ -218,13 +234,25 @@ function removeTest(topicId, testIndex) {
     return
   }
 
-  clearTest(
-    selectedStudentId.value,
-    topicId,
-    testIndex,
-  )
+  actionError.value = ''
+  actionLoading.value = true
 
-  message.value = 'Test result cleared.'
+  try {
+    await clearTest(
+      selectedStudentId.value,
+      topicId,
+      testIndex,
+    )
+
+    message.value = 'Test result cleared.'
+  } catch (error) {
+    actionError.value =
+      error instanceof Error
+        ? error.message
+        : 'Could not clear the test result.'
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 function percentageLabel(test) {
@@ -633,6 +661,19 @@ function pointsLabel(test) {
           </span>
         </div>
       </template>
+      <div
+        v-if="actionError"
+        class="message message--error"
+      >
+        {{ actionError }}
+      </div>
+
+      <div
+        v-if="actionLoading"
+        class="progress-action-loading"
+      >
+        Saving test...
+      </div>
     </main>
   </div>
 </template>

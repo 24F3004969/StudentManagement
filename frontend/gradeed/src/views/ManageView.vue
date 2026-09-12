@@ -59,8 +59,9 @@ const filteredTopics = computed(() => {
       .toLowerCase()
       .includes(query)
 
-    const subtopicMatches = topic.subs.some((subtopic) =>
-      subtopic.toLowerCase().includes(query),
+    const subtopicMatches = (topic.subs || []).some(
+      (subtopic) =>
+        subtopic.toLowerCase().includes(query),
     )
 
     return titleMatches || subtopicMatches
@@ -420,7 +421,7 @@ async function removeStudent(student) {
                   <span class="topic-title-area">
                     <strong>{{ topic.title }}</strong>
                     <small>
-                      {{ topic.subs.length }} subtopics
+                     {{ topic.subs?.length || 0 }} subtopics
                     </small>
                   </span>
                 </button>
@@ -518,7 +519,7 @@ async function removeStudent(student) {
                 </form>
 
                 <div
-                  v-if="topic.subs.length"
+                  v-if="topic.subs?.length"
                   class="subtopic-list"
                 >
                   <div

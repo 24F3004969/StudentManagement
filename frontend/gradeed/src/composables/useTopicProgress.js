@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-
+import { progressApi } from '@/services/progressApi'
 import { ALL_TOPICS_COMPLETED } from '@/constants/app'
 import { useMathStore } from '@/stores/mathStore'
 
@@ -356,7 +356,7 @@ export function useTopicProgress() {
     mathStore.scheduleSave()
   }
 
-  function toggleSubtopic(
+  async function toggleSubtopic(
     studentId,
     topicId,
     subtopicIndex,
@@ -364,7 +364,14 @@ export function useTopicProgress() {
     const topic = getTopic(topicId)
 
     if (!topic) {
-      return
+      throw new Error('Topic was not found.')
+    }
+
+    const subtopicId =
+      topic.subtopicIds?.[subtopicIndex]
+
+    if (!subtopicId) {
+      throw new Error('Subtopic was not found.')
     }
 
     const checks = getSubtopicProgress(
@@ -372,163 +379,96 @@ export function useTopicProgress() {
       topicId,
     )
 
-    if (
-      subtopicIndex < 0 ||
-      subtopicIndex >= checks.length
-    ) {
-      return
-    }
+    const completed = !checks[subtopicIndex]
 
-    checks[subtopicIndex] = !checks[subtopicIndex]
-
-    saveStudentTopicRecord(
-      subProgressBool,
-      studentId,
-      topicId,
-      checks,
-    )
-
-    saveStudentValue(
-      lastActivity,
-      studentId,
-      Date.now(),
-    )
-
-    if (!checks[subtopicIndex]) {
-      deleteStudentTopicRecord(
-        completedAt,
+    const response =
+      await progressApi.setSubtopicCompletion(
         studentId,
         topicId,
+        subtopicId,
+        completed,
+      )
+
+    mathStore.applyStudentProgressResponse(response)
+
+    return response
+  }
+  async function markAllSubtopicsComplete(
+    studentId,
+    topicId,
+  ) {
+    const topic = getTopic(topicId)
+
+    if (!topic) {
+      throw new Error('Topic was not found.')
+    }
+
+    if (!topic.subs.length) {
+      throw new Error(
+        'This topic does not contain subtopics.',
       )
     }
 
-    const allCompleted =
-      checks.length > 0 && checks.every(Boolean)
+    const response =
+      await progressApi.completeAllSubtopics(
+        studentId,
+        topicId,
+      )
 
-    if (allCompleted) {
-      completeTopic(studentId, topicId)
-    } else {
-      mathStore.scheduleSave()
-    }
+    mathStore.applyStudentProgressResponse(response)
+
+    return response
   }
 
-  function markAllSubtopicsComplete(
+  async function completeTopicWithoutSubtopics(
     studentId,
     topicId,
   ) {
     const topic = getTopic(topicId)
 
-    if (!topic || !topic.subs.length) {
-      return
+    if (!topic) {
+      throw new Error('Topic was not found.')
     }
 
-    const completedChecks = Array.from(
-      { length: topic.subs.length },
-      () => true,
-    )
+    if (topic.subs.length) {
+      throw new Error(
+        'Complete all subtopics before completing this topic.',
+      )
+    }
 
-    saveStudentTopicRecord(
-      subProgressBool,
+    const response = await progressApi.completeTopic(
       studentId,
       topicId,
-      completedChecks,
     )
 
-    completeTopic(studentId, topicId)
+    mathStore.applyStudentProgressResponse(response)
+
+    return response
   }
-
-  function completeTopicWithoutSubtopics(
-    studentId,
-    topicId,
-  ) {
-    const topic = getTopic(topicId)
-
-    if (!topic || topic.subs.length) {
-      return
-    }
-
-    completeTopic(studentId, topicId)
-  }
-
-  function setTopicCompletionDate(
+  async function setTopicCompletionDate(
     studentId,
     topicId,
     dateValue,
   ) {
-    if (!dateValue) {
-      deleteStudentTopicRecord(
-        completedAt,
+    const response =
+      await progressApi.changeCompletionDate(
         studentId,
         topicId,
+        dateValue || null,
       )
 
-      mathStore.scheduleSave()
-      return
-    }
+    mathStore.applyStudentProgressResponse(response)
 
-    const timestamp = new Date(
-      `${dateValue}T12:00:00`,
-    ).getTime()
-
-    if (!Number.isFinite(timestamp)) {
-      return
-    }
-
-    saveStudentTopicRecord(
-      completedAt,
-      studentId,
-      topicId,
-      timestamp,
-    )
-
-    mathStore.scheduleSave()
+    return response
   }
 
-  function restartStudent(studentId) {
-    const firstTopic = topics.value[0]
+  async function restartStudent(studentId) {
+    const response =
+      await progressApi.restart(studentId)
 
-    if (!firstTopic) {
-      return
-    }
+    mathStore.applyStudentProgressResponse(response)
 
-    const now = Date.now()
-    const resetProgress = {}
-
-    topics.value.forEach((topic) => {
-      resetProgress[topic.id] = Array.from(
-        { length: topic.subs.length },
-        () => false,
-      )
-    })
-
-    saveStudentValue(
-      progress,
-      studentId,
-      firstTopic.id,
-    )
-
-    saveStudentValue(
-      startedAt,
-      studentId,
-      now,
-    )
-
-    saveStudentValue(
-      lastActivity,
-      studentId,
-      now,
-    )
-
-    saveStudentValue(
-      subProgressBool,
-      studentId,
-      resetProgress,
-    )
-
-    deleteStudentValue(completedAt, studentId)
-    deleteStudentValue(timeSpent, studentId)
-
-    mathStore.scheduleSave()
+    return response
   }
 
   const studentProgressRows = computed(() => {
@@ -555,14 +495,16 @@ export function useTopicProgress() {
     getCompletedTopicCount,
     getStudentProgressPercentage,
     getTopicProgressPercentage,
-
-    completeTopic,
     toggleSubtopic,
     markAllSubtopicsComplete,
     completeTopicWithoutSubtopics,
     setTopicCompletionDate,
     restartStudent,
-
+    saveStudentTopicRecord,
+    saveStudentValue,
+    deleteStudentValue,
+    deleteStudentTopicRecord,
+    completeTopic,
     studentProgressRows,
   }
 }

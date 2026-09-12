@@ -7,4 +7,4 @@ public record TopicResponse(
         String title,
         Integer displayOrder,
         Integer difficulty,
-        List<SubtopicResponse> subtopicResponses){}
+        List<SubtopicResponse> subtopics){}
