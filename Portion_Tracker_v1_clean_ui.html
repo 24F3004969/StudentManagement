@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portion Tracker</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f7;color:#17191c}button,input,select{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:flex}.side{width:100%;height:64px;background:#fff;border-bottom:1px solid #e5e7eb;padding:0 22px;position:relative;z-index:5;display:flex;align-items:center;gap:28px}.brand{font-weight:900;font-size:18px;white-space:nowrap}.brand small{display:block;color:#888;font-size:9px;margin-top:2px}.nav{display:flex;align-items:center;gap:6px}.nav button{display:block;width:auto;height:40px;border:0;background:transparent;text-align:left;padding:0 13px;border-radius:8px;margin:0;font-weight:800;color:#686e76;white-space:nowrap;cursor:pointer}.navIcon{font-size:17px;line-height:1}.nav button.active{background:#17191c;color:#fff}.nav button:after,.backup:after{content:attr(data-label);position:absolute;left:58px;top:50%;transform:translateY(-50%);background:#17191c;color:#fff;padding:7px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;z-index:100}.nav button:hover:after,.backup:hover:after{opacity:1;visibility:visible}.side .backup{position:relative;margin-top:30px;width:48px;height:44px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid #dddfe3}.backup .navIcon{font-size:16px}.main{min-width:0}.top{height:64px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 26px;font-weight:800}.content{padding:26px;max-width:1450px;margin:auto}.bar{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:18px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a8088;font-weight:800}.title{font-size:29px;font-weight:900;margin:3px 0}.muted{color:#747a82}.btn{border:1px solid #dddfe3;background:#fff;border-radius:8px;padding:9px 12px;font-weight:700}.btn:hover{background:#f0f1f3}.primary{background:#17191c;color:#fff;border-color:#17191c}.danger{color:#b72c25}.actions{display:flex;gap:7px;flex-wrap:wrap}.grid{display:grid;gap:12px}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.card{background:#fff;border:1px solid #e2e4e7;border-radius:12px;padding:17px}.metric b{display:block;font-size:28px;margin:5px 0}.metric span{font-size:11px;color:#777}.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label,.field>label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#777;font-weight:800;margin-bottom:5px}.field.full{grid-column:1/-1}input,select,textarea{width:100%;padding:9px;border:1px solid #dddfe3;border-radius:8px;background:#fff}.table{overflow:auto}.table table{width:100%;border-collapse:collapse;min-width:650px}.table th,.table td{padding:11px 13px;border-bottom:1px solid #e8e9eb;text-align:left}.table th{font-size:10px;text-transform:uppercase;color:#777;background:#fafafa}.topic{display:grid;grid-template-columns:48px 1fr 170px 90px;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid #e7e8ea}.topic.head{border:0;background:#fafafa;color:#777;font-size:10px;text-transform:uppercase;font-weight:800}.num{color:#888;font-size:11px}.empty{text-align:center;padding:45px;color:#777}.selector{display:grid;grid-template-columns:1fr 1fr 2fr;gap:9px}.studentLayout{display:block}.studentSearchOnly{display:none}.studentLanding{min-height:calc(100vh - 150px);display:flex;align-items:flex-start;justify-content:center;padding-top:55px}.studentSearchCard{width:min(900px,100%);padding:34px}.searchBox{display:flex;align-items:center;gap:12px;border:1px solid #dfe2e6;background:#fff;border-radius:14px;padding:0 18px;height:64px;margin-top:24px}.searchIcon{font-size:25px;color:#777}.searchBox input{border:0!important;outline:0;font-size:18px!important;padding:0!important;box-shadow:none!important}.searchResults{margin-top:10px;border:1px solid #e1e3e6;border-radius:12px;overflow:hidden}.studentResult{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-bottom:1px solid #eee;background:#fff;text-align:left;padding:16px 18px;cursor:pointer}.studentResult:last-child{border-bottom:0}.studentResult:hover{background:#f6f7f8}.studentResult b{font-size:16px}.studentResult span{color:#737983;font-size:13px}.searchEmpty{margin-top:12px}.reportPage{max-width:1250px;margin:auto}.reportTop{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:12px}.reportBento{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:12px;margin-bottom:12px}.bentoCard{background:#fff;border:1px solid #e2e4e7;border-radius:16px;padding:18px}.subjectCard select{font-size:17px;font-weight:800;margin-top:9px}.stat span{font-size:11px;color:#777;text-transform:uppercase;font-weight:800}.stat b{display:block;font-size:30px;margin-top:8px}.progressCard b{font-size:24px;display:block;margin:6px 0 12px}.topicBento{display:grid;grid-template-columns:1fr 1fr;gap:12px}.topicCard{min-height:94px;display:flex;flex-direction:column;justify-content:space-between}.topicName{font-size:15px;font-weight:800}.statusChecks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.statusChecks label{display:flex;align-items:center;gap:7px;font-weight:600;font-size:12px;cursor:pointer}.statusChecks input{width:17px;height:17px;margin:0;accent-color:#111}.reportBottom{display:flex;justify-content:center;padding:26px 0 50px}.reportBtn{min-width:240px;height:48px;font-size:15px}.backBtn{border:0;background:transparent;padding:0;margin-bottom:12px;color:#555;font-weight:700;cursor:pointer}.reportHeader{margin-bottom:12px}.studentName{font-size:25px;font-weight:900}.pills{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.pill{padding:6px 9px;border-radius:20px;background:#eef0f2;font-size:11px;font-weight:800}.green{background:#e8f6ee;color:#16834d}.yellow{background:#fff5d5;color:#906d00}.red{background:#fdebea;color:#b72c25}.progress{height:6px;background:#e9eaec;border-radius:9px;overflow:hidden}.progress i{display:block;height:100%;background:#17191c}.topic{display:grid;grid-template-columns:48px 1fr 170px 90px;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid #e7e8ea}.topic.head{border:0;background:#fafafa;color:#777;font-size:10px;text-transform:uppercase;font-weight:800}.empty{text-align:center;padding:45px;color:#777}.@media(max-width:850px){.content{padding:18px}.reportBento{grid-template-columns:1fr 1fr}.subjectCard,.progressCard{grid-column:1/-1}.topicBento{grid-template-columns:1fr}.statusChecks{grid-template-columns:1fr 1fr 1fr}.studentSearchCard{padding:24px}}
+@media(max-width:600px){.content{padding:14px}.g3,.g4,.form,.selector,.reportBento{grid-template-columns:1fr}.subjectCard,.progressCard{grid-column:auto}.statusChecks{grid-template-columns:1fr}.reportTop{align-items:stretch;flex-direction:column}.topic{grid-template-columns:30px 1fr}.topic.head{display:none}}
+
+.studentSearchOnly{max-width:900px;margin:70px auto 0}
+.searchBox{display:flex;align-items:center;gap:12px;border:1px solid #dfe2e6;background:#fff;border-radius:14px;padding:0 18px;height:64px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.searchIcon{font-size:25px;color:#777}
+.searchBox input{border:0!important;outline:0;font-size:18px!important;padding:0!important;box-shadow:none!important}
+.searchResults{margin-top:10px;background:#fff;border:1px solid #e1e3e6;border-radius:12px;overflow:hidden}
+.studentResult{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-bottom:1px solid #eee;background:#fff;text-align:left;padding:16px 18px;cursor:pointer}
+.studentResult:last-child{border-bottom:0}
+.studentResult:hover{background:#f6f7f8}
+.studentResult b{font-size:16px}
+.studentResult span{color:#737983;font-size:13px}
+.searchEmpty{margin-top:12px}
+.reportPage{max-width:1200px}
+.backBtn{border:0;background:transparent;padding:0;margin-bottom:12px;color:#555;font-weight:700;cursor:pointer}
+.reportHeader{margin-bottom:12px}
+.reportHeader select{font-size:16px;font-weight:700}
+.topicList{padding:0;overflow:hidden}
+.studentTopic{display:grid;grid-template-columns:minmax(300px,1fr) minmax(430px,1fr);align-items:center;gap:20px;padding:17px 18px;border-bottom:1px solid #eee}
+.studentTopic:last-child{border-bottom:0}
+.topicName{font-size:16px;font-weight:700}
+.statusChecks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.statusChecks label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;cursor:pointer}
+.statusChecks input{width:18px;height:18px;margin:0;accent-color:#111}
+.reportBottom{display:flex;justify-content:center;padding:26px 0 50px}
+.reportBtn{min-width:240px;height:48px;font-size:15px}
+@media(max-width:850px){
+ .studentSearchOnly{margin-top:35px}
+ .studentTopic{grid-template-columns:1fr;gap:12px}
+ .statusChecks{grid-template-columns:1fr 1fr 1fr}
+ .studentResult{display:block}.studentResult span{display:block;margin-top:5px}
+}
+
+.teacherSelectors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.teacherSelect label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#777;font-weight:800;margin-bottom:6px}
+.teacherSelect select{height:48px;font-size:16px;font-weight:700}
+.teacherPath{padding:15px 16px;background:#fafafa;border-bottom:1px solid #e7e8ea;font-weight:800}
+.teacherPath span{color:#999;margin:0 5px}
+@media(max-width:800px){.teacherSelectors{grid-template-columns:1fr}}
+
+/* V3 top navigation */
+.navTools{margin-left:auto;display:flex;gap:8px;align-items:center}
+.sideTool{height:38px;padding:0 14px;border:1px solid #dfe2e6;background:#fff;border-radius:8px;font-weight:800;cursor:pointer}
+.sideTool:hover{background:#f3f4f5;color:#111}
+.masterSelectors{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.masterSelectors label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#777;font-weight:800;margin-bottom:6px}
+.masterSelectors select{height:48px;font-size:16px;font-weight:700}
+.syllabusGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.syllabusCard{background:#fff;border:1px solid #e3e5e8;border-radius:14px;padding:18px;min-height:125px;cursor:pointer}
+.syllabusCard:hover{border-color:#bbb}
+.syllabusSubject{font-size:20px;font-weight:900;margin-bottom:8px}
+.syllabusActions{display:flex;gap:8px;margin-top:18px}
+@media(max-width:850px){
+  .side{height:auto;min-height:64px;flex-wrap:wrap;padding:10px 14px;gap:10px}
+  .nav{flex-wrap:wrap}
+  .navTools{margin-left:0}
+  .syllabusGrid{grid-template-columns:1fr}
+}
+
+/* V4 — clean minimal layout */
+html,body{min-height:100%;overflow-x:hidden}
+body{background:#f5f6f7;color:#17191c}
+.app{display:block;min-height:100vh}
+.side{
+  width:100%;
+  height:72px;
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+  padding:0 28px;
+  display:flex;
+  align-items:center;
+  gap:34px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.brand{flex:0 0 auto;font-weight:900;font-size:18px;line-height:1.05;white-space:nowrap}
+.brand small{display:block;color:#858b93;font-size:9px;letter-spacing:.5px;margin-top:4px}
+.nav{display:flex;align-items:center;gap:4px;height:100%}
+.nav button{
+  height:40px;
+  padding:0 15px;
+  border:0;
+  background:transparent;
+  border-radius:9px;
+  color:#60666e;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+}
+.nav button:hover{background:#f3f4f5;color:#17191c}
+.nav button.active{background:#17191c;color:#fff}
+.navTools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.sideTool{height:38px;padding:0 14px;border:1px solid #dfe2e6;background:#fff;border-radius:9px;font-weight:800;color:#30343a}
+.sideTool:hover{background:#f3f4f5;color:#111}
+.main{width:100%;min-width:0}
+.content{width:min(1240px,calc(100% - 48px));padding:34px 0 60px;margin:0 auto}
+.bar{margin-bottom:22px;align-items:center}
+.title{font-size:32px;line-height:1.05}
+.muted{line-height:1.45}
+.card{border-radius:14px}
+.grid{gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.metric{min-height:105px}
+.metric b{font-size:30px}
+.syllabusGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.syllabusCard{border-radius:14px;min-height:140px}
+.teacherSelectors{gap:12px}
+.reportPage{max-width:none}
+.reportBento{gap:14px}
+.topicBento{gap:14px}
+.studentLanding{min-height:auto;padding-top:50px}
+.studentSearchCard{box-shadow:none}
+@media(max-width:900px){
+  .side{height:auto;min-height:72px;padding:12px 18px;gap:18px;flex-wrap:wrap}
+  .brand{margin-right:8px}
+  .nav{height:40px;order:3;width:100%;overflow-x:auto}
+  .navTools{margin-left:auto}
+  .content{width:min(100% - 28px,1240px);padding-top:24px}
+  .g4{grid-template-columns:1fr 1fr}
+  .g3,.syllabusGrid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .side{padding:12px 14px}
+  .navTools{margin-left:0}
+  .content{width:calc(100% - 20px);padding-top:18px}
+  .g4,.g3,.syllabusGrid{grid-template-columns:1fr}
+}
+
+.dashboardHead{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:22px}
+.dashboardBento{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.dashboardBento .card{min-height:190px;padding:22px;display:flex;flex-direction:column;align-items:flex-start}
+.dashboardBento .card b{font-size:20px;margin-top:12px}
+.dashboardBento .card p{margin:10px 0 20px;max-width:280px}
+.dashLabel{font-size:10px;font-weight:900;letter-spacing:1px;color:#8a9098}
+@media(max-width:700px){.dashboardHead{flex-direction:column;align-items:flex-start}.dashboardBento{grid-template-columns:1fr}}
+
+/* V5 modal + navigation fixes */
+.side{height:70px;min-height:70px;padding:0 24px;display:flex;align-items:center;gap:28px;overflow:visible}
+.brand{flex:0 0 auto;display:block;min-width:205px;overflow:visible;white-space:nowrap}
+.brand small{white-space:nowrap}
+.nav{flex:0 0 auto;display:flex;align-items:center;gap:4px}
+.nav button{position:relative}
+.navTools{margin-left:auto;flex:0 0 auto}
+.main{width:100%}
+.top{display:none}
+.content{width:min(1240px,calc(100% - 48px));padding:32px 0 60px}
+.modalbg{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(17,19,22,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.modal{
+  width:min(720px,100%);
+  max-height:calc(100vh - 48px);
+  overflow:auto;
+  background:#fff;
+  border-radius:16px;
+  border:1px solid #e0e2e5;
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+}
+.mh{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 24px;
+  border-bottom:1px solid #e7e8ea;
+  font-size:20px;
+  font-weight:900;
+}
+.close{
+  border:0;
+  background:transparent;
+  width:36px;
+  height:36px;
+  border-radius:8px;
+  font-size:28px;
+  line-height:1;
+  font-weight:700;
+  cursor:pointer;
+}
+.close:hover{background:#f1f2f3}
+.mb{padding:24px}
+.mf{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  padding:16px 24px;
+  border-top:1px solid #e7e8ea;
+}
+@media(max-width:850px){
+  .side{height:auto;min-height:70px;padding:12px 18px;flex-wrap:wrap}
+  .brand{min-width:auto}
+  .nav{order:3;width:100%;overflow-x:auto}
+  .navTools{margin-left:auto}
+}
+
+/* V6 navigation cleanup */
+.nav button::before,.nav button::after,
+.nav button:hover::before,.nav button:hover::after,
+.nav button.active::before,.nav button.active::after{
+  content:none!important;
+  display:none!important;
+}
+.nav button{background:transparent!important;color:#555!important;box-shadow:none!important}
+.nav button:hover{background:#f3f4f5!important;color:#111!important}
+.nav button.active{background:#17191c!important;color:#fff!important}
+
+/* V6 — student report: simple bento layout */
+.studentSummary{max-width:1240px;margin:0 auto}
+.summaryTop{background:#fff;border:1px solid #e1e4e7;border-radius:18px;padding:24px 26px;margin-bottom:14px}
+.summaryTop .backBtn{margin-bottom:18px}
+.summaryTitle{font-size:38px;font-weight:900;line-height:1.05;margin:5px 0 5px}
+.summaryStats{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:12px;margin-bottom:14px}
+.summaryStat{background:#fff;border:1px solid #e1e4e7;border-radius:16px;padding:20px;min-height:112px}
+.summaryStat span{font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:900;color:#707780}
+.summaryStat b{display:block;font-size:32px;line-height:1;margin-top:12px}
+.summaryStat small{display:block;color:#7b828b;margin-top:9px;font-size:11px}
+.summaryStat.big b{font-size:34px}
+.summaryProgress{height:7px;background:#e9ebed;border-radius:10px;overflow:hidden;margin:14px 0 0}
+.summaryProgress i{display:block;height:100%;background:#17191c;border-radius:10px}
+.summaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.summaryPanel{background:#fff;border:1px solid #e1e4e7;border-radius:16px;padding:20px;min-height:220px}
+.panelHead{display:flex;justify-content:space-between;align-items:center;font-size:16px;margin-bottom:14px}
+.panelHead span{font-size:11px;font-weight:900;padding:5px 8px;border-radius:20px;background:#f0f1f2}
+.summaryList{border-top:1px solid #eceeef}
+.summaryTopic{display:flex;justify-content:space-between;gap:14px;padding:11px 2px;border-bottom:1px solid #eceeef;font-size:13px;font-weight:700}
+.summaryTopic small{color:#858b93;font-size:11px;text-align:right}
+.summaryEmpty{padding:25px 2px;color:#8a9097;font-size:13px}
+.summaryActions{display:flex;justify-content:flex-end;gap:8px;padding:18px 0 40px}
+@media(max-width:1000px){.summaryStats{grid-template-columns:1fr 1fr}.summaryStat.big{grid-column:1/-1}}
+@media(max-width:650px){.summaryGrid{grid-template-columns:1fr}.summaryStats{grid-template-columns:1fr 1fr}.summaryTitle{font-size:30px}.summaryTopic{display:block}.summaryTopic small{display:block;text-align:left;margin-top:3px}.summaryActions{justify-content:stretch}.summaryActions .btn{flex:1}}
+
+/* V7 — simpler student progress UI */
+.studentProgressPage{max-width:1280px;margin:0 auto}
+.studentHeader{padding:24px 28px!important}
+.studentHeader .title{font-size:36px!important;line-height:1.05;margin-top:4px}
+.studentSubjectBar{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:18px 22px!important;margin-top:12px}
+.studentSubjectBar .eyebrow{margin-bottom:4px}
+.subjectHint{font-size:13px;color:#7a828b}
+.studentSubjectBar select{width:min(420px,48%);height:48px;font-size:16px;font-weight:700;border:1px solid #dfe3e6;border-radius:10px;background:#fff;padding:0 14px;box-shadow:none}
+.topicsHeader{display:flex;align-items:end;justify-content:space-between;margin:28px 2px 12px}
+.topicsHeader h2{font-size:22px;margin:2px 0 0;font-weight:750;letter-spacing:-.2px}
+.topicCount{font-size:12px;color:#737b84;background:#f1f2f3;border-radius:999px;padding:6px 10px}
+.studentTopics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important}
+.studentTopics .topicCard{padding:17px 18px!important;border-radius:14px!important;border:1px solid #e3e6e8!important;box-shadow:0 1px 3px rgba(20,24,28,.04)!important;transition:none!important}
+.studentTopics .topicCard:hover{transform:none!important;box-shadow:0 1px 3px rgba(20,24,28,.04)!important}
+.topicTop{display:flex;align-items:flex-start;gap:12px;margin-bottom:15px}
+.topicTop .num{font-size:11px;font-weight:800;color:#969da5;min-width:22px;padding-top:2px}
+.studentTopics .topicName{font-size:16px;font-weight:650;line-height:1.3;letter-spacing:-.1px}
+.studentTopics .statusChecks{display:grid!important;grid-template-columns:repeat(3,1fr);gap:7px!important}
+.studentTopics .statusChecks label{display:flex!important;align-items:center!important;justify-content:center;gap:7px;padding:9px 7px;border:1px solid #e4e7e9;border-radius:8px;background:#fafafa;font-size:11px!important;font-weight:650!important;color:#5d646c;white-space:nowrap}
+.studentTopics .statusChecks label.checked{border-color:#cfd3d7;background:#f1f2f3;color:#17191c}
+.studentTopics .statusChecks input{width:15px!important;height:15px!important;margin:0!important;accent-color:#17191c}
+.studentTopics .statusChecks label span{font-size:11px!important}
+.studentTopics .topicCard.is-completed{border-left:3px solid #17191c!important}
+.studentTopics .topicCard.is-revision{border-left:3px solid #777!important}
+.studentTopics .topicCard.is-absent{border-left:3px solid #aaa!important}
+.studentProgressPage .reportBottom{padding:18px 0 34px}
+.studentProgressPage .reportBtn{font-size:14px}
+@media(max-width:800px){
+ .studentSubjectBar{display:block}
+ .studentSubjectBar select{width:100%;margin-top:12px}
+ .studentTopics{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+ .studentHeader{padding:20px!important}
+ .studentHeader .title{font-size:30px!important}
+ .studentTopics .statusChecks{grid-template-columns:1fr}
+}
+</style>
+
+<style>
+/* V8 — Student section redesign based on supplied bento reference. Structure/font/spacing only; existing colors retained. */
+.studentBentoPage{max-width:1280px;margin:0 auto}
+.studentTopBento{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:26px 28px!important;border-radius:20px!important;box-shadow:0 1px 3px rgba(20,24,28,.035)!important}
+.studentTopLeft .backBtn{margin-bottom:18px}
+.studentBentoName{font-size:34px;font-weight:800;line-height:1.02;letter-spacing:-.9px;margin-top:5px}
+.studentBentoMeta{font-size:14px;color:#747a82;margin-top:8px}
+.studentBentoMeta span{padding:0 5px;color:#a0a5ab}
+.editStudentBtn{margin-top:2px}
+.studentControlGrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,1fr);gap:12px;margin-top:12px}
+.subjectBento,.portionBento{min-height:126px;padding:20px 22px!important;border-radius:18px!important;box-shadow:0 1px 3px rgba(20,24,28,.035)!important}
+.subjectControlRow{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-top:13px}
+.subjectHint{font-size:13px;color:#7a828b}
+.subjectBento select{width:min(390px,52%);height:46px;font-size:15px;font-weight:700;border:1px solid #dfe3e6;border-radius:10px;background:#fff;padding:0 13px;box-shadow:none}
+.portionBentoTitle{font-size:22px;font-weight:800;line-height:1.1;margin-top:8px;letter-spacing:-.3px}
+.portionBentoMeta{font-size:12px;color:#7b828a;margin-top:7px}
+.studentTopics{margin-top:12px!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
+.studentTopics .topicCard{padding:18px 18px 16px!important;border-radius:18px!important;box-shadow:0 1px 3px rgba(20,24,28,.035)!important;min-height:116px!important}
+.studentTopics .topicCard:hover{box-shadow:0 1px 3px rgba(20,24,28,.035)!important}
+.studentTopics .topicTop{margin-bottom:14px}
+.studentTopics .topicName{font-size:15px!important;font-weight:700!important;line-height:1.28!important;letter-spacing:-.15px!important}
+.studentTopics .statusChecks{gap:8px!important;margin-top:0!important}
+.studentTopics .statusChecks label{padding:9px 8px!important;border-radius:9px!important;font-size:11px!important}
+.studentTopics .statusChecks input{width:15px!important;height:15px!important}
+.studentTopics .statusChecks label span{font-size:11px!important}
+.reportBottom{padding:18px 0 36px!important}
+.reportBtn{min-width:230px;height:46px!important;border-radius:10px!important}
+@media(max-width:850px){
+ .studentControlGrid{grid-template-columns:1fr}
+ .subjectControlRow{align-items:stretch;flex-direction:column;gap:10px}
+ .subjectBento select{width:100%}
+ .studentTopics{grid-template-columns:1fr!important}
+}
+@media(max-width:600px){
+ .studentTopBento{padding:20px!important}
+ .studentBentoName{font-size:29px}
+ .studentTopBento{gap:12px}
+ .editStudentBtn{padding:8px 10px}
+}
+</style>
+
+<style id="clean-ui">
+/* Clean UI pass: color, contrast and readability only. */
+:root{
+  --ui-bg:#f3f6f8;
+  --ui-surface:#ffffff;
+  --ui-surface-soft:#f7f9fa;
+  --ui-surface-muted:#eef2f5;
+  --ui-border:#dfe5ea;
+  --ui-border-strong:#cfd8df;
+  --ui-text:#18222b;
+  --ui-text-2:#46535e;
+  --ui-muted:#74818c;
+  --ui-blue:#315ddd;
+  --ui-blue-soft:#edf2ff;
+  --ui-blue-dark:#244bc2;
+  --ui-orange:#f45a43;
+  --ui-orange-soft:#fff0ed;
+  --ui-lime:#c8f52b;
+  --ui-lime-soft:#f2fbd1;
+  --ui-black:#17191b;
+}
+
+/* Reset visual effects */
+*,*::before,*::after{
+  animation:none!important;
+  transition:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+html{background:var(--ui-bg)!important}
+body{
+  background:var(--ui-bg)!important;
+  color:var(--ui-text)!important;
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:optimizeLegibility!important;
+}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--ui-blue)!important;
+  outline-offset:2px!important;
+}
+
+/* Application shell */
+.app{
+  background:var(--ui-bg)!important;
+}
+.side{
+  background:var(--ui-surface)!important;
+  border-color:var(--ui-border)!important;
+}
+.main{
+  background:var(--ui-surface)!important;
+  color:var(--ui-text)!important;
+}
+.content{
+  background:var(--ui-surface)!important;
+  color:var(--ui-text)!important;
+}
+
+/* Navigation */
+.side .brand,
+.side .brand small{color:var(--ui-text)!important}
+.side .nav button{
+  color:#5d6a75!important;
+  background:transparent!important;
+}
+.side .nav button:hover{
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-muted)!important;
+}
+.side .nav button.active{
+  color:var(--ui-blue)!important;
+  background:var(--ui-blue-soft)!important;
+}
+.side .navTools .sideTool{
+  color:#65727d!important;
+  background:transparent!important;
+}
+.side .navTools .sideTool:hover{
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-muted)!important;
+}
+
+/* Headings and secondary text */
+h1,h2,h3,h4,h5,h6,
+.title,.refTitle,
+.studentBentoName,
+.studentRefName{
+  color:var(--ui-text)!important;
+}
+.eyebrow,.refBrand{
+  color:var(--ui-blue)!important;
+}
+.muted,.refSub,
+.studentRefMeta,
+.studentRefStats,
+.studentBentoMeta{
+  color:var(--ui-muted)!important;
+}
+p{
+  color:var(--ui-text-2)!important;
+}
+
+/* Buttons */
+.btn{
+  background:var(--ui-surface)!important;
+  color:var(--ui-text)!important;
+  border:1px solid var(--ui-border-strong)!important;
+}
+.btn:hover{
+  background:var(--ui-surface-soft)!important;
+  border-color:#bfcad3!important;
+}
+.btn.primary{
+  background:var(--ui-blue)!important;
+  border-color:var(--ui-blue)!important;
+  color:#fff!important;
+}
+.btn.primary:hover{
+  background:var(--ui-blue-dark)!important;
+  border-color:var(--ui-blue-dark)!important;
+}
+.limeBtn{
+  background:var(--ui-lime)!important;
+  color:#172000!important;
+  border:1px solid #b9df23!important;
+}
+
+/* Generic cards — completely flat */
+.card,
+.dashboardBento .card,
+.studentRefCard,
+.studentTopBento,
+.subjectBento,
+.portionBento,
+.dashboardInfo,
+.topicCard,
+.studentTopics .topicCard{
+  box-shadow:none!important;
+}
+
+/* Card surfaces */
+.card,
+.dashboardBento .card,
+.studentRefCard{
+  background:var(--ui-surface)!important;
+  border:1px solid var(--ui-border)!important;
+  color:var(--ui-text)!important;
+}
+.dashboardInfo{
+  background:var(--ui-surface-soft)!important;
+  border:1px solid var(--ui-border)!important;
+}
+.subjectBento{
+  background:var(--ui-surface-soft)!important;
+  border:1px solid var(--ui-border)!important;
+}
+.portionBento{
+  background:var(--ui-orange)!important;
+  border:0!important;
+  color:#fff!important;
+}
+
+/* Dashboard metric colors */
+.metric-students{
+  background:var(--ui-blue)!important;
+  color:#fff!important;
+}
+.metric-syllabi{
+  background:var(--ui-orange)!important;
+  color:#fff!important;
+}
+.metric-topics{
+  background:var(--ui-black)!important;
+  color:#fff!important;
+}
+.metric-revision-flags{
+  background:var(--ui-lime)!important;
+  color:#172000!important;
+}
+.metric-students span,.metric-syllabi span,.metric-topics span,
+.metric-students b,.metric-syllabi b,.metric-topics b{
+  color:#fff!important;
+}
+.metric-revision-flags span,.metric-revision-flags b{
+  color:#172000!important;
+}
+
+/* Student hero */
+.studentTopBento{
+  background:var(--ui-blue)!important;
+  color:#fff!important;
+  border:0!important;
+}
+.studentTopBento h1,
+.studentTopBento h2,
+.studentTopBento h3,
+.studentTopBento .studentBentoName{
+  color:#fff!important;
+}
+.studentTopBento .eyebrow,
+.studentTopBento .studentBentoMeta{
+  color:rgba(255,255,255,.78)!important;
+}
+.studentTopBento .backBtn,
+.studentTopBento .editStudentBtn{
+  background:var(--ui-lime)!important;
+  color:#172000!important;
+  border:1px solid #b9df23!important;
+}
+
+/* Student list */
+.refAvatar{
+  background:var(--ui-blue-soft)!important;
+  color:var(--ui-blue)!important;
+}
+.progressLine{
+  background:#e5eaee!important;
+}
+.progressLine span{
+  background:var(--ui-blue)!important;
+}
+.refArrow{
+  color:#8996a0!important;
+}
+
+/* Topics: flat, readable, distinct status controls */
+.topicCard,
+.studentTopics .topicCard{
+  background:#fff!important;
+  border:1px solid var(--ui-border)!important;
+  border-left:1px solid var(--ui-border)!important;
+  color:var(--ui-text)!important;
+}
+.topicCard:hover,
+.studentTopics .topicCard:hover{
+  background:var(--ui-surface-soft)!important;
+}
+.topicCard .topicName{
+  color:var(--ui-text)!important;
+}
+.topicCard .statusChecks label{
+  background:var(--ui-surface-soft)!important;
+  border:1px solid var(--ui-border)!important;
+  color:var(--ui-text-2)!important;
+}
+.topicCard .statusChecks label:hover{
+  background:var(--ui-surface-muted)!important;
+}
+.topicCard .statusChecks input{
+  accent-color:var(--ui-blue)!important;
+}
+.topicCard.is-completed .statusChecks label,
+.topicCard .statusChecks label:has(input:checked){
+  color:var(--ui-blue)!important;
+}
+
+/* Forms */
+input,select,textarea,
+.form input,.form select,.form textarea{
+  background:#fff!important;
+  color:var(--ui-text)!important;
+  border:1px solid var(--ui-border-strong)!important;
+}
+input::placeholder,textarea::placeholder{
+  color:#98a3ac!important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#8fa8e7!important;
+  outline:2px solid rgba(49,93,221,.12)!important;
+  outline-offset:0!important;
+}
+.field label,.field>label{
+  color:#5d6a75!important;
+}
+
+/* Tables */
+.table{
+  background:#fff!important;
+  border:1px solid var(--ui-border)!important;
+}
+.table th{
+  background:var(--ui-surface-muted)!important;
+  color:#5e6b76!important;
+}
+.table td{
+  color:var(--ui-text-2)!important;
+  border-color:var(--ui-border)!important;
+}
+
+/* Tabs and search */
+.refTabs button{
+  background:#fff!important;
+  color:#687580!important;
+  border:1px solid var(--ui-border)!important;
+}
+.refTabs button:hover{
+  background:var(--ui-surface-soft)!important;
+  color:var(--ui-text)!important;
+}
+.refTabs button.active{
+  background:var(--ui-blue)!important;
+  color:#fff!important;
+  border-color:var(--ui-blue)!important;
+}
+.refSearch{
+  background:var(--ui-surface-soft)!important;
+  border:1px solid var(--ui-border)!important;
+}
+.refSearch input{
+  background:transparent!important;
+  border:0!important;
+}
+
+/* Modals */
+.modalbg{
+  background:rgba(17,25,32,.48)!important;
+}
+.modal{
+  background:#fff!important;
+  border:1px solid var(--ui-border)!important;
+  color:var(--ui-text)!important;
+}
+.mh{color:var(--ui-text)!important}
+.mb{color:var(--ui-text-2)!important}
+.close{
+  color:#687580!important;
+  background:var(--ui-surface-muted)!important;
+  border:1px solid var(--ui-border)!important;
+}
+
+/* Status / utility surfaces */
+.toast{
+  background:var(--ui-black)!important;
+  color:#fff!important;
+  border:1px solid #2d3236!important;
+}
+
+/* Ensure no accidental legacy effects survive */
+[style*="box-shadow"]{box-shadow:none!important}
+[style*="transition"]{transition:none!important}
+[style*="animation"]{animation:none!important}
+
+@media(max-width:850px){
+  .studentTopics{grid-template-columns:1fr!important}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">PORTION TRACKER<small>SYLLABUS • PROGRESS</small></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="navTools">
+      <button class="sideTool" onclick="exportData()">Export</button>
+      <button class="sideTool" onclick="importData()">Import</button>
+      <input id="importFile" type="file" accept=".json" hidden onchange="handleImport(this)">
+    </div>
+  </aside>
+  <main class="main">
+    <section class="content" id="view"></section>
+  </main>
+</div>
+<div id="modal"></div><div class="toast" id="toast"></div>
+<script>
+const KEY="portion_tracker_v3";let db=load(),page="dashboard",selected=null;
+function load(){
+try{
+let d=JSON.parse(localStorage.getItem(KEY))||{syllabi:[],students:[]};
+(d.students||[]).forEach(s=>{
+ s.progressBySyllabus=s.progressBySyllabus||{};
+ // Migrate older single-status data into the correct syllabus bucket.
+ if(s.syllabusId){s.progressBySyllabus[s.syllabusId]=s.status||s.progressBySyllabus[s.syllabusId]||{};delete s.syllabusId;delete s.status;}
+ // Migrate any previous current-syllabus status object.
+ if(s.currentSyllabusId && s.status){s.progressBySyllabus[s.currentSyllabusId]=s.status;delete s.status;}
+});
+return d;
+}catch(e){return{syllabi:[],students:[]}}
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function uid(p){return p+"_"+Math.random().toString(36).slice(2,9)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function getS(id){return db.syllabi.find(s=>s.id===id)}
+function getSt(id){return db.students.find(s=>s.id===id)}
+function fmt(d){return d?new Date(d+"T00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—"}
+function nav(){
+  document.getElementById("nav").innerHTML=[
+    ["dashboard","Dashboard"],
+    ["master","Master Syllabus"],
+    ["teacher","Teacher"],
+    ["students","Students"]
+  ].map(x=>`<button class="${page===x[0]?"active":""}" onclick="go('${x[0]}')">${x[1]}</button>`).join("");
+}
+function go(p){page=p;selected=page==="students"?selected:null;render()}
+function render(){nav();({dashboard,master,teacher,students}[page])()}
+function dashboard(){
+  let topics=db.syllabi.reduce((a,s)=>a+s.topics.length,0);
+  let rev=db.students.reduce((a,s)=>a+Object.values(s.progressBySyllabus||{}).reduce((n,p)=>n+Object.values(p||{}).filter(x=>x==="revision").length,0),0);
+  document.getElementById("view").innerHTML=`
+    <div class="dashboardHead">
+      <div>
+        <div class="eyebrow">Overview</div>
+        <div class="title">Portion Tracker</div>
+        <div class="muted">Master syllabus → Teacher completion → Student progress.</div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" onclick="studentModal()">+ Student</button>
+        <button class="btn" onclick="syModal()">+ Syllabus</button>
+      </div>
+    </div>
+    <div class="grid g4">
+      ${metric("Students",db.students.length)}
+      ${metric("Syllabi",db.syllabi.length)}
+      ${metric("Topics",topics)}
+      ${metric("Revision flags",rev)}
+    </div>
+    <div style="height:14px"></div>
+    <div class="dashboardBento">
+      <div class="card"><div class="dashLabel">01</div><b>Master Syllabus</b><p class="muted">Create subjects and topics by Board and Class.</p><button class="btn" onclick="go('master')">Open</button></div>
+      <div class="card"><div class="dashLabel">02</div><b>Teacher</b><p class="muted">Mark topics completed and record completion dates.</p><button class="btn" onclick="go('teacher')">Open</button></div>
+      <div class="card"><div class="dashLabel">03</div><b>Students</b><p class="muted">Search a student and maintain subject-wise progress.</p><button class="btn" onclick="go('students')">Open</button></div>
+    </div>`;
+}
+function metric(a,b){return `<div class="card metric"><span>${a}</span><b>${b}</b></div>`}
+let masterState={board:"",cls:""};
+function master(){
+  let boards=[...new Set(db.syllabi.map(s=>s.board))];
+  if(!boards.length){
+    document.getElementById("view").innerHTML=`
+      <div class="bar"><div><div class="eyebrow">Master Syllabus</div><div class="title">Syllabus</div><div class="muted">Create syllabi by Board and Class.</div></div><button class="btn primary" onclick="syModal()">+ Add syllabus</button></div>
+      <div class="card empty">No syllabus entered yet. Add your first syllabus.</div>`;
+    return;
+  }
+  if(!boards.includes(masterState.board)) masterState.board=boards[0];
+  let classes=[...new Set(db.syllabi.filter(s=>s.board===masterState.board).map(s=>s.cls))];
+  if(!classes.includes(masterState.cls)) masterState.cls=classes[0]||"";
+
+  document.getElementById("view").innerHTML=`
+    <div class="bar">
+      <div><div class="eyebrow">Master Syllabus</div><div class="title">Syllabus</div><div class="muted">Select Board → Class to view the subjects entered for that class.</div></div>
+      <button class="btn primary" onclick="syModal()">+ Add syllabus</button>
+    </div>
+    <div class="masterSelectors card">
+      <div><label>BOARD</label><select id="mb" onchange="masterBoardChanged(this.value)">${boards.map(x=>`<option value="${esc(x)}" ${x===masterState.board?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
+      <div><label>CLASS</label><select id="mc" onchange="masterClassChanged(this.value)">${classes.map(x=>`<option value="${esc(x)}" ${x===masterState.cls?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
+    </div>
+    <div style="height:12px"></div>
+    <div id="masterList"></div>`;
+  masterList();
+}
+function masterBoardChanged(v){masterState.board=v;masterState.cls="";master()}
+function masterClassChanged(v){masterState.cls=v;masterList()}
+function masterList(){
+  const el=document.getElementById("masterList"); if(!el)return;
+  const rows=db.syllabi.filter(s=>s.board===masterState.board&&s.cls===masterState.cls);
+  el.innerHTML=`<div class="syllabusGrid">${rows.map(s=>`
+    <div class="syllabusCard" onclick="openS('${s.id}')">
+      <div class="syllabusSubject">${esc(s.subject)}</div>
+      <div class="muted">${s.topics.length} topic${s.topics.length===1?"":"s"}</div>
+      <div class="syllabusActions"><button class="btn" onclick="event.stopPropagation();openS('${s.id}')">Edit</button><button class="btn danger" onclick="event.stopPropagation();delS('${s.id}')">Delete</button></div>
+    </div>`).join("")||'<div class="card empty">No subjects entered for this Board and Class.</div>'}</div>`;
+}
+function syModal(i){let s=getS(i);modal(s?"Edit syllabus":"New syllabus",`<div class="form"><div class="field"><label>Class</label><select id="mcls">${["IV","V","VI","VII","VIII","IX","X"].map(x=>`<option ${x===s?.cls?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>Board</label><select id="mboard">${["CBSE","ICSE","STATE"].map(x=>`<option ${x===s?.board?"selected":""}>${x}</option>`).join("")}</select></div><div class="field full"><label>Subject</label><input id="msub" value="${esc(s?.subject||"")}" placeholder="Mathematics"></div></div>`,()=>{let cls=mcls.value,board=mboard.value,subject=msub.value.trim();if(!subject){alert("Subject is required.");return}if(db.syllabi.some(x=>x.cls===cls&&x.board===board&&x.subject.toLowerCase()===subject.toLowerCase()&&x.id!==i)){alert("That syllabus already exists.");return}let o={id:i||uid("sy"),cls,board,subject,topics:s?.topics||[]};if(i)Object.assign(s,o);else db.syllabi.push(o);save();closeModal();openS(o.id)})}
+function openS(i){let s=getS(i);document.getElementById("view").innerHTML=`<div class="bar"><div><button class="btn" onclick="master()">← Back</button><div class="eyebrow" style="margin-top:13px">Class ${esc(s.cls)} • ${esc(s.board)}</div><div class="title">${esc(s.subject)}</div><div class="muted">${s.topics.length} topics</div></div><button class="btn primary" onclick="topicModal('${i}')">+ Add topic</button></div><div class="card" style="padding:0;overflow:hidden"><div class="topic head"><span>#</span><span>Topic</span><span>Teacher date</span><span></span></div>${s.topics.map((t,n)=>`<div class="topic"><span class="num">${n+1}</span><b>${esc(t.name)}</b><span>${t.completed?fmt(t.date):"Not completed"}</span><button class="btn danger" onclick="delTopic('${s.id}','${t.id}')">Delete</button></div>`).join("")||'<div class="empty">No topics. Add a topic above.</div>'}</div>`}
+function topicModal(sid){
+let s=getS(sid);
+modal("Add topics",`
+<div class="muted" style="font-size:12px;margin-bottom:12px">
+Add topics individually. You can keep adding rows before saving.
+</div>
+<div id="topicRows" style="display:grid;gap:8px">
+  <div class="topicEntry" style="display:flex;gap:8px">
+    <input class="newTopic" placeholder="Topic 1" autofocus>
+    <button type="button" class="btn danger removeTopic" onclick="this.parentElement.remove()">Remove</button>
+  </div>
+</div>
+<button type="button" class="btn" style="margin-top:10px" onclick="addTopicRow()">+ Add another topic</button>
+`,
+()=>{
+let inputs=[...document.querySelectorAll(".newTopic")];
+let names=inputs.map(x=>x.value.trim()).filter(Boolean);
+if(!names.length){alert("Enter at least one topic.");return}
+let existing=new Set(s.topics.map(t=>t.name.trim().toLowerCase()));
+let added=0;
+names.forEach(name=>{
+if(!existing.has(name.toLowerCase())){
+s.topics.push({id:uid("tp"),name,completed:false,date:""});
+existing.add(name.toLowerCase());
+added++;
+}
+});
+save();closeModal();openS(sid);toast(added+" topic"+(added===1?"":"s")+" added");
+});
+}
+function addTopicRow(){
+let rows=document.getElementById("topicRows");
+let n=rows.querySelectorAll(".topicEntry").length+1;
+let row=document.createElement("div");
+row.className="topicEntry";
+row.style.cssText="display:flex;gap:8px";
+row.innerHTML='<input class="newTopic" placeholder="Topic '+n+'"><button type="button" class="btn danger removeTopic" onclick="this.parentElement.remove()">Remove</button>';
+rows.appendChild(row);
+row.querySelector("input").focus();
+}
+function delTopic(sid,tid){if(!confirm("Delete this topic?"))return;let s=getS(sid);s.topics=s.topics.filter(t=>t.id!==tid);db.students.forEach(st=>Object.values(st.progressBySyllabus||{}).forEach(p=>{delete p?.[tid]}));save();openS(sid)}
+function delS(i){
+if(confirm("Delete this syllabus?")){db.syllabi=db.syllabi.filter(s=>s.id!==i);db.students.forEach(st=>{if(st.progressBySyllabus)delete st.progressBySyllabus[i];if(st.subjectId===i)st.subjectId=""});save();master()}
+}
+let teacherState={board:"",cls:"",subject:""};
+function teacher(){
+  if(!db.syllabi.length){
+    document.getElementById("view").innerHTML='<div class="card empty">Create a Master Syllabus first.</div>';
+    return;
+  }
+
+  let boards=[...new Set(db.syllabi.map(s=>s.board))];
+  if(!boards.includes(teacherState.board)) teacherState.board=boards[0]||"";
+
+  let classes=db.syllabi.filter(s=>s.board===teacherState.board).map(s=>s.cls);
+  classes=[...new Set(classes)];
+  if(!classes.includes(teacherState.cls)) teacherState.cls=classes[0]||"";
+
+  let subjects=db.syllabi.filter(s=>s.board===teacherState.board&&s.cls===teacherState.cls).map(s=>s.subject);
+  subjects=[...new Set(subjects)];
+  if(!subjects.includes(teacherState.subject)) teacherState.subject=subjects[0]||"";
+
+  document.getElementById("view").innerHTML=`
+    <div class="bar">
+      <div>
+        <div class="eyebrow">Teacher</div>
+        <div class="title">Complete Portion</div>
+        <div class="muted">Select Board → Class → Subject. Only syllabi that exist are shown.</div>
+      </div>
+    </div>
+
+    <div class="teacherSelectors card">
+      <div class="teacherSelect">
+        <label>BOARD</label>
+        <select id="tb" onchange="teacherBoardChanged(this.value)">
+          ${boards.map(x=>`<option value="${esc(x)}" ${x===teacherState.board?"selected":""}>${esc(x)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="teacherSelect">
+        <label>CLASS</label>
+        <select id="tc" onchange="teacherClassChanged(this.value)">
+          ${classes.map(x=>`<option value="${esc(x)}" ${x===teacherState.cls?"selected":""}>${esc(x)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="teacherSelect">
+        <label>SUBJECT</label>
+        <select id="tj" onchange="teacherSubjectChanged(this.value)">
+          ${subjects.map(x=>`<option value="${esc(x)}" ${x===teacherState.subject?"selected":""}>${esc(x)}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div id="tl"></div>`;
+  teacherList();
+}
+
+function teacherBoardChanged(v){
+  teacherState.board=v;
+  teacherState.cls="";
+  teacherState.subject="";
+  teacher();
+}
+function teacherClassChanged(v){
+  teacherState.cls=v;
+  teacherState.subject="";
+  teacher();
+}
+function teacherSubjectChanged(v){
+  teacherState.subject=v;
+  teacherList();
+}
+function selectedTeacherSyllabus(){
+  return db.syllabi.find(s=>s.board===teacherState.board&&s.cls===teacherState.cls&&s.subject===teacherState.subject);
+}
+function teacherList(){
+  let s=selectedTeacherSyllabus();
+  let el=document.getElementById("tl");
+  if(!el)return;
+  if(!s){
+    el.innerHTML='<div class="card empty">Select Board, Class and Subject to view topics.</div>';
+    return;
+  }
+  el.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
+    <div class="teacherPath">Class ${esc(s.cls)} <span>•</span> ${esc(s.board)} <span>•</span> ${esc(s.subject)}</div>
+    <div class="topic head"><span>#</span><span>Topic</span><span>Completion date</span><span>Completed</span></div>
+    ${s.topics.map((t,n)=>`<div class="topic">
+      <span class="num">${n+1}</span>
+      <b>${esc(t.name)}</b>
+      <input type="date" value="${esc(t.date||"")}" onchange="dateT('${s.id}','${t.id}',this.value)">
+      <label><input type="checkbox" ${t.completed?"checked":""} onchange="doneT('${s.id}','${t.id}',this.checked)"> Done</label>
+    </div>`).join("")||'<div class="empty">No topics entered for this syllabus.</div>'}
+  </div>`;
+}
+function doneT(sid,tid,on){let t=getS(sid).topics.find(t=>t.id===tid);t.completed=on;t.date=on?(t.date||new Date().toISOString().slice(0,10)):"";save();teacherList()}
+function dateT(sid,tid,d){let t=getS(sid).topics.find(t=>t.id===tid);t.date=d;t.completed=!!d;save();teacherList()}
+function getStudentSyllabi(s){return db.syllabi.filter(x=>x.cls===s.cls&&x.board===s.board)}
+function studentProgress(s,syid){s.progressBySyllabus=s.progressBySyllabus||{};s.progressBySyllabus[syid]=s.progressBySyllabus[syid]||{};return s.progressBySyllabus[syid]}
+function students(){
+document.getElementById("view").innerHTML=`
+<div class="studentLanding">
+  <div class="studentSearchCard card">
+    <div class="eyebrow">STUDENT</div>
+    <div class="title">Find Student</div>
+    <div class="muted">Search by student name or ED No.</div>
+    <div class="searchBox">
+      <span class="searchIcon">⌕</span>
+      <input id="studentSearch" autofocus placeholder="Search student name or ED No." value="${esc(window.studentQuery||"")}" oninput="window.studentQuery=this.value;renderStudentSearch()">
+    </div>
+    <div id="studentResults"></div>
+  </div>
+</div>`;
+renderStudentSearch();
+}
+function renderStudentSearch(){
+let q=(window.studentQuery||"").trim().toLowerCase(),box=document.getElementById("studentResults");
+if(!box)return;
+if(!q){box.innerHTML="";return}
+let arr=db.students.filter(x=>String(x.name||"").toLowerCase().includes(q)||String(x.edNo||"").toLowerCase().includes(q));
+box.innerHTML=arr.length?`<div class="searchResults">${arr.map(x=>`<button class="studentResult" onclick="openStudentReport('${x.id}')"><b>${esc(x.name)}</b><span>ED ${esc(x.edNo)}</span></button>`).join("")}</div>`:'<div class="empty searchEmpty">No matching student found.</div>';
+}
+function openStudentReport(id){selected=id;studentFullPage(id)}
+function studentFullPage(id){
+let s=getSt(id);if(!s)return students();
+let subjects=getStudentSyllabi(s);
+let sy=getS(s.currentSyllabusId);
+if(!sy||sy.cls!==s.cls||sy.board!==s.board)sy=subjects[0];
+if(!sy){document.getElementById("view").innerHTML=`<div class="card empty">No syllabus is available for Class ${esc(s.cls)} • ${esc(s.board)}.</div>`;return}
+s.currentSyllabusId=sy.id;s.progressBySyllabus=s.progressBySyllabus||{};save();
+let st=studentProgress(s,sy.id),allTopics=sy.topics||[],topics=allTopics.filter(t=>t.completed);
+document.getElementById("view").innerHTML=`
+<div class="reportPage studentProgressPage studentBentoPage">
+ <div class="studentTopBento bentoCard">
+   <div class="studentTopLeft">
+     <button class="backBtn" onclick="students()">← Students</button>
+     <div class="eyebrow">STUDENT</div>
+     <div class="studentBentoName">${esc(s.name)}</div>
+     <div class="studentBentoMeta">ED ${esc(s.edNo)} <span>•</span> Class ${esc(s.cls)} <span>•</span> ${esc(s.board)}</div>
+   </div>
+   <button class="btn editStudentBtn" onclick="studentModal('${s.id}')">Edit</button>
+ </div>
+
+ <div class="studentControlGrid">
+   <div class="subjectBento bentoCard">
+     <div class="eyebrow">SUBJECT</div>
+     <div class="subjectControlRow">
+       <div class="subjectHint">Select a subject to mark portion</div>
+       <select aria-label="Select subject" onchange="changeStudentSubject('${s.id}',this.value)">
+         ${subjects.map(x=>`<option value="${x.id}" ${x.id===sy.id?"selected":""}>${esc(x.subject)}</option>`).join("")}
+       </select>
+     </div>
+   </div>
+   <div class="portionBento bentoCard">
+     <div class="eyebrow">PORTION</div>
+     <div class="portionBentoTitle">${esc(sy.subject)}</div>
+     <div class="portionBentoMeta">${topics.length} topic${topics.length===1?"":"s"}</div>
+   </div>
+ </div>
+
+ <div class="topicBento studentTopics">
+ ${topics.map((t,n)=>{
+   let x=st[t.id]||"pending";
+   return `<div class="topicCard bentoCard ${x!=="pending"?"is-"+x:""}">
+     <div class="topicTop">
+       <span class="num">${String(n+1).padStart(2,"0")}</span>
+       <div class="topicName">${esc(t.name)}</div>
+     </div>
+     <div class="statusChecks">
+       <label class="${x==="completed"?"checked":""}"><input type="checkbox" ${x==="completed"?"checked":""} onclick="setStudentStatus('${s.id}','${sy.id}','${t.id}','completed',this)"><span>Completed</span></label>
+       <label class="${x==="revision"?"checked":""}"><input type="checkbox" ${x==="revision"?"checked":""} onclick="setStudentStatus('${s.id}','${sy.id}','${t.id}','revision',this)"><span>Needs Revision</span></label>
+       <label class="${x==="absent"?"checked":""}"><input type="checkbox" ${x==="absent"?"checked":""} onclick="setStudentStatus('${s.id}','${sy.id}','${t.id}','absent',this)"><span>Absent</span></label>
+     </div>
+   </div>`
+ }).join("")||'<div class="bentoCard empty">No topics available for this subject.</div>'}
+ </div>
+
+ <div class="reportBottom"><button class="btn reportBtn" onclick="generateStudentReport('${s.id}')">Generate Student Report</button></div>
+</div>`;
+}
+
+function changeStudentSubject(sid,syid){let s=getSt(sid),sy=getS(syid);if(!s||!sy)return;if(s.cls!==sy.cls||s.board!==sy.board)return; s.currentSyllabusId=syid;studentProgress(s,syid);save();studentFullPage(sid)}
+function setStudentStatus(sid,syid,tid,value,el){let s=getSt(sid);if(!s)return;let st=studentProgress(s,syid);if(el.checked)st[tid]=value;else delete st[tid];save();studentFullPage(sid)}
+function generateStudentReport(sid){
+  let s=getSt(sid);
+  if(!s)return;
+  studentSummaryPage(sid);
+}
+function studentSummaryPage(sid){
+  let s=getSt(sid);
+  if(!s)return students();
+  let subjects=getStudentSyllabi(s);
+  let totals={completed:0,revision:0,absent:0,pending:0,total:0};
+  let allCompleted=[],allRevision=[],allAbsent=[],allPending=[];
+  subjects.forEach(sy=>{
+    let st=studentProgress(s,sy.id),topics=sy.topics||[];
+    topics.forEach(t=>{
+      // Teacher-incomplete topics are not available for student marking.
+      if(!t.completed){
+        totals.pending++;
+        allPending.push({subject:sy.subject,topic:t.name});
+        return;
+      }
+      let status=st[t.id]||"pending";
+      totals.total++;
+      if(status==="completed"){totals.completed++;allCompleted.push({subject:sy.subject,topic:t.name});}
+      else if(status==="revision"){totals.revision++;allRevision.push({subject:sy.subject,topic:t.name});}
+      else if(status==="absent"){totals.absent++;allAbsent.push({subject:sy.subject,topic:t.name});}
+      else {totals.pending++;allPending.push({subject:sy.subject,topic:t.name});}
+    });
+  });
+  let pct=totals.total?Math.round(totals.completed/totals.total*100):0;
+  const list=(arr,empty)=>arr.length?arr.map(x=>`<div class="summaryTopic"><span>${esc(x.topic)}</span><small>${esc(x.subject)}</small></div>`).join(""):`<div class="summaryEmpty">${empty}</div>`;
+  document.getElementById("view").innerHTML=`
+  <div class="studentSummary">
+    <div class="summaryTop">
+      <button class="backBtn" onclick="studentFullPage('${s.id}')">← Back to Student</button>
+      <div class="eyebrow">STUDENT REPORT</div>
+      <div class="summaryTitle">${esc(s.name)}</div>
+      <div class="muted">ED ${esc(s.edNo)} • Class ${esc(s.cls)} • ${esc(s.board)}</div>
+    </div>
+
+    <div class="summaryStats">
+      <div class="summaryStat big"><span>Overall Progress</span><b>${pct}%</b><div class="summaryProgress"><i style="width:${pct}%"></i></div><small>${totals.completed} of ${totals.total} topics completed</small></div>
+      <div class="summaryStat complete"><span>Completed</span><b>${totals.completed}</b><small>Topics understood</small></div>
+      <div class="summaryStat revise"><span>Needs Revision</span><b>${totals.revision}</b><small>Topics not understood</small></div>
+      <div class="summaryStat absent"><span>Absent</span><b>${totals.absent}</b><small>Topics missed</small></div>
+      <div class="summaryStat pending"><span>Pending</span><b>${totals.pending}</b><small>Not yet marked</small></div>
+    </div>
+
+    <div class="summaryGrid">
+      <section class="summaryPanel completedPanel"><div class="panelHead"><b>Topics Completed</b><span>${totals.completed}</span></div><div class="summaryList">${list(allCompleted,"No topics completed yet.")}</div></section>
+      <section class="summaryPanel revisionPanel"><div class="panelHead"><b>Topics Not Understood</b><span>${totals.revision}</span></div><div class="summaryList">${list(allRevision,"No topics marked for revision.")}</div></section>
+      <section class="summaryPanel absentPanel"><div class="panelHead"><b>Topics Missed</b><span>${totals.absent}</span></div><div class="summaryList">${list(allAbsent,"No topics missed due to absence.")}</div></section>
+      <section class="summaryPanel pendingPanel"><div class="panelHead"><b>Topics Pending</b><span>${totals.pending}</span></div><div class="summaryList">${list(allPending,"All topics have been marked.")}</div></section>
+    </div>
+
+    <div class="summaryActions">
+      <button class="btn" onclick="studentFullPage('${s.id}')">Back to Progress</button>
+      <button class="btn primary" onclick="printStudentSummary('${s.id}')">Print Report</button>
+    </div>
+  </div>`;
+}
+function printStudentSummary(sid){
+  let s=getSt(sid);if(!s)return;
+  let subjects=getStudentSyllabi(s),tot={completed:0,revision:0,absent:0,pending:0,total:0};
+  let groups={completed:[],revision:[],absent:[]};
+  subjects.forEach(sy=>{let st=studentProgress(s,sy.id);(sy.topics||[]).forEach(t=>{if(!t.completed){tot.pending++;return}let x=st[t.id]||"pending";tot.total++;if(x==="completed"){tot.completed++;groups.completed.push([sy.subject,t.name])}else if(x==="revision"){tot.revision++;groups.revision.push([sy.subject,t.name])}else if(x==="absent"){tot.absent++;groups.absent.push([sy.subject,t.name])}else tot.pending++})});
+  let pct=tot.total?Math.round(tot.completed/tot.total*100):0;
+  let section=(title,arr)=>`<section><h2>${title} (${arr.length})</h2>${arr.length?`<ul>${arr.map(x=>`<li><b>${esc(x[1])}</b><span>${esc(x[0])}</span></li>`).join("")}</ul>`:"<p>None</p>"}</section>`;
+  let w=window.open("","_blank");if(!w){alert("Please allow pop-ups to print the report.");return}
+  w.document.write(`<!doctype html><html><head><title>${esc(s.name)} - Student Report</title><style>body{font-family:Arial,sans-serif;padding:36px;color:#17191c;max-width:900px;margin:auto}h1{margin:0 0 4px;font-size:30px}.meta{color:#68707a;margin-bottom:24px}.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{border:1px solid #ddd;border-radius:12px;padding:14px 18px;min-width:120px}.stat b{display:block;font-size:25px;margin-top:5px}section{border:1px solid #ddd;border-radius:12px;padding:18px;margin-top:14px}h2{font-size:18px}li{margin:8px 0}li span{display:block;color:#777;font-size:12px;margin-top:2px}</style></head><body><h1>${esc(s.name)}</h1><div class="meta">ED ${esc(s.edNo)} • Class ${esc(s.cls)} • ${esc(s.board)}</div><div class="stats"><div class="stat">Progress<b>${pct}%</b></div><div class="stat">Completed<b>${tot.completed}</b></div><div class="stat">Not Understood<b>${tot.revision}</b></div><div class="stat">Missed<b>${tot.absent}</b></div><div class="stat">Pending<b>${tot.pending}</b></div></div>${section("Topics Completed",groups.completed)}${section("Topics Not Understood",groups.revision)}${section("Topics Missed",groups.absent)}<script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+
+function studentModal(i){
+let s=getSt(i);
+modal(s?"Edit student":"Add student",`<div class="form"><div class="field"><label>Name</label><input id="sn" value="${esc(s?.name||"")}"></div><div class="field"><label>ED No.</label><input id="se" value="${esc(s?.edNo||"")}"></div><div class="field"><label>Class</label><select id="scls">${["IV","V","VI","VII","VIII","IX","X"].map(x=>`<option ${x===s?.cls?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>Board</label><select id="sboard">${["CBSE","ICSE","STATE"].map(x=>`<option ${x===s?.board?"selected":""}>${x}</option>`).join("")}</select></div></div>`,
+()=>{let name=sn.value.trim(),ed=se.value.trim();if(!name||!ed){alert("Name and ED No. are required.");return}if(db.students.some(x=>x.edNo===ed&&x.id!==i)){alert("ED No. already exists.");return}let subjects=db.syllabi.filter(x=>x.cls===scls.value&&x.board===sboard.value),current=s?.currentSyllabusId;if(!subjects.some(x=>x.id===current))current=subjects[0]?.id||null;let o={id:i||uid("st"),name,edNo:ed,cls:scls.value,board:sboard.value,currentSyllabusId:current,progressBySyllabus:s?.progressBySyllabus||{}};if(i)Object.assign(s,o);else db.students.push(o);selected=o.id;save();close();students()})
+}
+function modal(title,body,fn){document.getElementById("modal").innerHTML=`<div class="modalbg"><div class="modal"><div class="mh">${title}<button class="close" onclick="closeModal()">×</button></div><div class="mb">${body}</div><div class="mf"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" id="save">Save</button></div></div></div>`;document.getElementById("save").onclick=fn}
+function closeModal(){document.getElementById("modal").innerHTML=""}
+function backup(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="portion-tracker-backup.json";a.click()}
+function toast(x){let t=document.getElementById("toast");t.textContent=x;t.style.display="block";setTimeout(()=>t.style.display="none",1200)}
+render();
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="portion-tracker-backup.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),500);
+}
+function importData(){
+  const el=document.getElementById("importFile");
+  if(el) el.click();
+}
+function handleImport(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data||!Array.isArray(data.syllabi)||!Array.isArray(data.students)){
+        throw new Error("Invalid Portion Tracker backup.");
+      }
+      db=data;
+      save();
+      selected=null;
+      window.studentQuery="";
+      teacherState={board:"",cls:"",subject:""};
+      render();
+      toast("Data imported successfully");
+    }catch(e){
+      alert("Import failed: "+e.message);
+    }finally{
+      input.value="";
+    }
+  };
+  reader.readAsText(file);
+}
+function backup(){exportData()}
+</script>
+</body></html>
